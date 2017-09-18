@@ -1,0 +1,9 @@
+select
+*
+
+from main_pb
+
+where 
+
+convert(varchar(10),opdate,23) >=convert(varchar(10),'2017-01-01',23)
+and convert(varchar(10),opdate,23) <=convert(varchar(10),'2017-06-30',23)
