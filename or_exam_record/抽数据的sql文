@@ -17,7 +17,6 @@ bpi.PatientAreaNum as Ward_Name,/*病区名称*/
 null as Sickroom_Name,/*病房名称*/
 bpi.bednum as Bed_No,/*床位号*/
 bpi.his_apply_no as Electr_Requisition_No,/*电子申请单号*/
-/*case when nvl(rivt.his_apply_no,'')<>'' then rivt.his_apply_no else bpi.his_apply_no end as Electr_Requisition_No,/*电子申请单号*/
 null as Apply_MI_Name,/*申请医疗机构名称*/
 NULL as Apply_Date,/*申请日期*/
 null as Apply_Dept_Code,/*申请科室代码*/
@@ -68,7 +67,6 @@ bci.checkdoctor as Proof_Dr_Sign/*审核医生签名*/
 FROM cs.bnsMainInfo bmi
 LEFT JOIN cs.bnsPatientInfo bpi ON bmi.MainInfoID = bpi.MainInfoID
 LEFT JOIN cs.bnsCheckInfo bci ON bmi.MainInfoID = bci.MainInfoID
-/*LEFT JOIN cs.ReportInfoViewTemp rivt ON bmi.MainInfoID = rivt.MainInfoID*/
 WHERE  bci.CHECKTIME >= to_date('2017-01-01','yyyy-mm-dd')
 UNION ALL 
 
@@ -92,7 +90,6 @@ bpi.PatientAreaNum as Ward_Name,/*病区名称*/
 null as Sickroom_Name,/*病房名称*/
 bpi.bednum as Bed_No,/*床位号*/
 bpi.his_apply_no as Electr_Requisition_No,/*电子申请单号*/
-/*case when nvl(rivt.his_apply_no,'')<>'' then rivt.his_apply_no else bpi.his_apply_no end as Electr_Requisition_No,/*电子申请单号*/
 null as Apply_MI_Name,/*申请医疗机构名称*/
 NULL as Apply_Date,/*申请日期*/
 null as Apply_Dept_Code,/*申请科室代码*/
@@ -143,7 +140,6 @@ bci.checkdoctor as Proof_Dr_Sign/*审核医生签名*/
 FROM NJ.bnsMainInfo bmi
 LEFT JOIN NJ.bnsPatientInfo bpi ON bmi.MainInfoID = bpi.MainInfoID
 LEFT JOIN NJ.bnsCheckInfo bci ON bmi.MainInfoID = bci.MainInfoID
-/*LEFT JOIN NJ.ReportInfoViewTemp rivt ON bmi.MainInfoID = rivt.MainInfoID*/
 WHERE bci.CHECKDATE >= to_date('2017-01-01','yyyy-mm-dd')
 UNION ALL
 
@@ -167,7 +163,6 @@ bpi.PatientAreaNum as Ward_Name,/*病区名称*/
 null as Sickroom_Name,/*病房名称*/
 bpi.bednum as Bed_No,/*床位号*/
 bpi.his_apply_no as Electr_Requisition_No,/*电子申请单号*/
-/*case when nvl(rivt.his_apply_no,'')<>'' then rivt.his_apply_no else bpi.his_apply_no end as Electr_Requisition_No,/*电子申请单号*/
 null as Apply_MI_Name,/*申请医疗机构名称*/
 NULL as Apply_Date,/*申请日期*/
 null as Apply_Dept_Code,/*申请科室代码*/
@@ -209,7 +204,6 @@ bci.checkdate as Exam_Date,/*检查日期*/
 bmi.MainInfoID as Exam_Report_No,/*检查报告单号*/
 null as Exam_Report_MI_Name,/*检查报告医疗机构名称*/
 null as Exam_Report_Dept_Name,/*检查报告科室名称*/
---to_char(bci.checksee) as Exam_Report_Result_Objective,/*检查报告结果-客观所见*/
 bci.checksee as Exam_Report_Result_Objective,/*检查报告结果-客观所见*/
 bci.checkresult as Exam_Report_Result_Subjective,/*检查报告结果-主观提示*/
 null as Exam_Report_Comment,/*检查报告备注*/
@@ -219,57 +213,29 @@ bci.checkdoctor as Proof_Dr_Sign/*审核医生签名*/
 FROM csxd.bnsMainInfo bmi
 LEFT JOIN csxd.bnsPatientInfo bpi ON bmi.MainInfoID = bpi.MainInfoID
 LEFT JOIN csxd.bnsCheckInfo bci ON bmi.MainInfoID = bci.MainInfoID
-/*LEFT JOIN neij.ReportInfoViewTemp rivt ON bmi.MainInfoID = rivt.MainInfoID*/
 WHERE bci.CHECKDATE >= to_date('2017-01-01','yyyy-mm-dd')
-
-
-
 UNION ALL
-
-
-
 SELECT
-  null	as	Key_ID	,/*主键*/
-	null	as	MI_Code	,/*医疗机构代码*/
-	null	as	Visit_No	,/*就诊流水号*/
-	null	as	Inhosp_No	,/*住院流水号*/
-a.PATIENT_ID as	EMPI_ID	,/*患者主索引号*/
-
-
-a.VISIT_ID	as	Visit_Num,/*就诊次数/住院次数*/
-
-a.TREAT_TYPE	as	Pat_Type_Code,/*患者来源代码*/
-
-b.NAME	as	Pat_Name,/*患者姓名*/
-
-b.GENDER	as	Sex_Code,/*性别代码*/
-
-null	as	Age,/*年龄*/
-null	as	Phone_No,/*联系电话*/
-a.APPLY_DEPT	as	Dept_Name,/*科室名称*/
-
-
-a.LOCATION	as	Ward_Name,/*病区名称*/
-
-
-null	as	Sickroom_Name,/*病房名称*/
-a.BED_NO	as	Bed_No,/*床位号*/
-
-
-b.PHONE_NUMBER_HOME	as	Electr_Requisition_No,/*电子申请单号*/
-
-
+  null  as  Key_ID  ,/*主键*/
+  null  as  MI_Code  ,/*医疗机构代码*/
+  null  as  Visit_No  ,/*就诊流水号*/
+  null  as  Inhosp_No  ,/*住院流水号*/
+a.PATIENT_ID as  EMPI_ID  ,/*患者主索引号*/
+a.VISIT_ID  as  Visit_Num,/*就诊次数/住院次数*/
+a.TREAT_TYPE  as  Pat_Type_Code,/*患者来源代码*/
+b.NAME  as  Pat_Name,/*患者姓名*/
+b.GENDER  as  Sex_Code,/*性别代码*/
+null  as  Age,/*年龄*/
+null  as  Phone_No,/*联系电话*/
+a.APPLY_DEPT  as  Dept_Name,/*科室名称*/
+a.LOCATION  as  Ward_Name,/*病区名称*/
+null  as  Sickroom_Name,/*病房名称*/
+a.BED_NO  as  Bed_No,/*床位号*/
+b.PHONE_NUMBER_HOME  as  Electr_Requisition_No,/*电子申请单号*/
 null  as  Apply_MI_Name,/*申请医疗机构名称*/
-
 a.APPLY_TIME  as  Apply_Date,/*申请日期*/
-
-
 a.APPLY_DEPT  as  Apply_Dept_Code,/*申请科室代码*/
-
-
 a.APPLY_DOCT_ID  as  Apply_Dr_Code,/*申请医生工号*/
-
-
 null  as  Diag_Code,/*诊断代码*/
 null  as  Diag_MI_Code,/*诊断医疗机构*/
 null  as  Diag_Date,/*诊断日期*/
@@ -277,8 +243,6 @@ null  as  Pat_Chief_Desc,/*患者主诉*/
 null  as  Symptom_Begin_Date,/*症状开始日期*/
 null  as  Symptom_End_Date,/*症状停止日期*/
 a.MEDICATION  as  Symptom_Desc,/*症状描述*/
-
-
 null  as  Spec_Exam_Flag,/*特殊检查标志*/
 null  as  Surgery_Code,/*手术代码*/
 null  as  Surgery_Name,/*手术名称*/
@@ -301,39 +265,20 @@ null  as  Sample_Receive_Date,/*样本接收日期*/
 null  as  Exam_Method_Name,/*检查方法名称*/
 null  as  Exam_Item_Type_Code,/*检查项目类型代码*/
 c.ID  as  Exam_Item_Code,/*检查项目代码*/
-
-
 to_clob(a.MEDICAL_HISTORY)  as  Exam_Result,/*检查结果*/
---NULL,
-
 null  as  Exam_Quantify_Result,/*检查定量结果*/
 null  as  Exam_Quantify_Result_Unit,/*检查定量结果计量单位*/
 null  as  Exam_Dr_Sign,/*检查医生签名*/
-
---a.OPERATE_TIME  as  Exam_Date,/*检查日期*/
-NULL,
-
-
---a.TEST_ID  as  Exam_Report_No,/*检查报告单号*/
-NULL,
-
-
+a.OPERATE_TIME  as  Exam_Date,/*检查日期*/
+a.TEST_ID  as  Exam_Report_No,/*检查报告单号*/
 null  as  Exam_Report_MI_Name,/*检查报告医疗机构名称*/
 null  as  Exam_Report_Dept_Name,/*检查报告科室名称*/
-
---a.MEDICAL_HISTORY as  Exam_Report_Result_Objective,/*检查报告结果-客观所见*/
 to_clob(a.MEDICAL_HISTORY)  as  Exam_Report_Result_Objective,/*检查报告结果-客观所见*/
-
-
 null  as  Exam_Report_Result_Subjective,/*检查报告结果-主观提示*/
 null  as  Exam_Report_Comment,/*检查报告备注*/
---a.AUDIT_TIME  as  Exam_Report_Date,/*检查报告日期*/
-null,
-
+a.AUDIT_TIME as Exam_Report_Date,/*检查报告日期*/
 null  as  Report_Dr_Sign,/*报告医生签名*/
 null  as  Proof_Dr_Sign  /*审核医生签名*/
-
-
 from xd.SPIRIT_TEST a 
 left join xd.SPIRIT_PATIENT b
 on a.patient_id = b.patient_id
