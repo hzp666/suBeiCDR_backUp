@@ -1,0 +1,35 @@
+SELECT  
+  ''  as  Key_ID  ,  /*主键*/
+ ''  as  MI_Code  ,  /*医疗机构代码*/
+f_blh  as  Pathology_No  ,  /*病理号*/
+f_sqxh  as  Pathology_Exam_Requisition_No  ,  /*病理检查申请单号*/
+f_blh  as  EMPI_ID  ,  /*患者主索引号*/
+f_mzh  as  Visit_No  ,  /*就诊流水号*/
+f_zyh  as  Inhosp_No  ,  /*住院流水号*/
+ ''  as  MR_No  ,  /*病案号*/
+ ''  as  Visit_Num  ,  /*就诊次数/住院次数*/
+f_xm  as  Pat_Name  ,  /*患者姓名*/
+f_xb  as  Sex_Name  ,  /*性别名称*/
+ ''  as  Date_Birth  ,  /*出生日期*/
+ ''  as  Exam_Item_Code  ,  /*检查项目代码*/
+f_bblx  as  Sample_Type_Name  ,  /*样本类型名称*/
+ ''  as  Send_Test_Dept_Index_No  ,  /*送检科室索引号*/
+ ''  as  Send_Test_Dept_Code  ,  /*送检科室代码*/
+f_sjks  as  Send_Test_Dept_Name  ,  /*送检科室名称*/
+ ''  as  Send_Test_Dr_Index_No  ,  /*送检医生索引号*/
+ ''  as  Send_Test_Dr_Code  ,  /*送检医生工号*/
+f_sjys  as  Send_Test_Dr_Name  ,  /*送检医生姓名*/
+ ''  as  Report_Dr_Index_No  ,  /*报告医生索引号*/
+ ''  as  Report_Dr_Code  ,  /*报告医生工号*/
+f_bgys  as  Report_Dr_Name  ,  /*报告医生姓名*/
+ ''  as  Proof_Dr_Index_No  ,  /*审核医生索引号*/
+ ''  as  Proof_Dr_Code  ,  /*审核医生工号*/
+f_shys  as  Proof_Dr_Name  ,  /*审核医生姓名*/
+f_bgrq  as  Report_Date  ,  /*报告日期*/
+f_rysj  as  Be_Seen_Visually  ,  /*肉眼所见*/
+f_jxsj  as  Microscopic_Findings  ,  /*镜下所见*/
+f_blzd  as  Diag_Desc  ,  /*诊断说明*/
+f_sdrq  as  Exam_Date    /*检查日期*/
+
+FROM T_JCXX
+where f_bgrq >= '2017-01-01'
