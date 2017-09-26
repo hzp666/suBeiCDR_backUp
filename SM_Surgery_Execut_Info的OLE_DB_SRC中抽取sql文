@@ -1,0 +1,79 @@
+SELECT
+
+ ''	as	Key_ID	,	/*主键*/
+ ''	as	MI_Code	,	/*医疗机构代码*/
+patientid	as	Surgery_No	,	/*手术流水号*/
+ ''	as	Surgery_Requisition_No	,	/*手术申请单号*/
+ ''	as	EMPI_ID	,	/*患者主索引号*/
+ ''	as	Visit_No	,	/*就诊流水号*/
+Hospitalization_number	as	Inhosp_No	,	/*住院流水号*/
+ ''	as	Visit_Num	,	/*就诊次数/住院次数*/
+Full_name	as	Pat_Name  ,  /*患者姓名*/
+Gender  as  Sex_Code  ,  /*性别代码*/
+ ''  as  Date_Birth  ,  /*出生日期*/
+ ''  as  Oper_Num  ,  /*手术次数*/
+ ''  as  Curr_Dept_Index_No  ,  /*当前科室索引号*/
+ ''  as  Curr_Dept_Code  ,  /*当前科室代码*/
+Department  as  Curr_Dept_Name  ,  /*当前科室名称*/
+to_date(e_date,'yyyy.MM.DD')  as  Surgery_Date  ,  /*手术日期*/
+to_date(Operation_start_time,'yyyy.MM.DD HH24:MI:SS')  as  Surgery_Begin_Date  ,  /*手术开始日期*/
+to_date(operation_End_time,'yyyy.MM.DD HH24:MI:SS')  as  Surgery_End_Date  ,  /*手术结束日期*/
+ ''  as  Surgery_Dept_Index_No  ,  /*手术科室索引号*/
+ ''  as  Surgery_Dept_Code  ,  /*手术科室代码*/
+Operation_Department  as  Surgery_Dept_Name  ,  /*手术科室名称*/
+ ''  as  Surgery_Dr_Index_No  ,  /*手术医生索引号*/
+ ''  as  Surgery_Dr_Code  ,  /*手术医生工号*/
+Surgeon_doctor  as  Surgery_Dr_Name  ,  /*手术医生姓名*/
+ ''  as  Surgery_Room_Code  ,  /*手术室代码*/
+ ''  as  Surgery_Code  ,  /*手术代码*/
+Operation_name  as  Surgery_Name  ,  /*手术名称*/
+ ''  as  Main_Surgery_Flag  ,  /*主手术标志*/
+ ''  as  Pre_Surgery_Diag_Code  ,  /*术前诊断代码*/
+ ''  as  Post_Surgery_Diag_Code  ,  /*术后诊断代码*/
+ ''  as  Surgery_Level_Code  ,  /*手术级别代码*/
+ ''  as  Surgery_Part_Code  ,  /*手术操作部位代码*/
+ ''  as  Wound_Level_Code  ,  /*切口等级代码*/
+ ''  as  First_SA_Dr_Index_No  ,  /*第一手术助理医生索引号*/
+ ''  as  First_SA_Dr_Code  ,  /*第一手术助理医生工号*/
+ ''  as  Second_SA_Dr_Index_No  ,  /*第二手术助理医生索引号*/
+ ''  as  Second_SA_Dr_Code  ,  /*第二手术助理医生工号*/
+ ''  as  Third_SA_Dr_Index_No  ,  /*第三手术助理医生索引号*/
+ ''  as  Third_SA_Dr_Code  ,  /*第三手术助理医生工号*/
+ ''  as  Fourth_SA_Dr_Index_No  ,  /*第四手术助理医生索引号*/
+ ''  as  Fourth_SA_Dr_Code  ,  /*第四手术助理医生工号*/
+ ''  as  Anes_Method_Code  ,  /*麻醉方式代码*/
+Anesthesia_method  as  Anes_Method_Name  ,  /*麻醉方式名称*/
+ ''  as  First_Anes_Dr_Index_No  ,  /*第一麻醉医生索引号*/
+ ''  as  First_Anes_Dr_Code  ,  /*第一麻醉医生工号*/
+ ''  as  Second_Anes_Dr_Index_No  ,  /*第二麻醉医生索引号*/
+ ''  as  Second_Anes_Dr_Code  ,  /*第二麻醉医生工号*/
+ ''  as  Third_Anes_Dr_Index_No  ,  /*第三麻醉医生索引号*/
+ ''  as  Third_Anes_Dr_Code  ,  /*第三麻醉医生工号*/
+ ''  as  First_AA_Dr_Index_No  ,  /*第一麻醉助理医生索引号*/
+ ''  as  First_AA_Dr_Code  ,  /*第一麻醉助理医生工号*/
+ ''  as  Second_AA_Dr_Index_No  ,  /*第二麻醉助理医生索引号*/
+ ''  as  Second_AA_Dr_Code  ,  /*第二麻醉助理医生工号*/
+ ''  as  Third_AA_Dr_Index_No  ,  /*第三麻醉助理医生索引号*/
+ ''  as  Third_AA_Dr_Code  ,  /*第三麻醉助理医生工号*/
+ ''  as  Fourth_AA_Dr_Index_No  ,  /*第四麻醉助理医生索引号*/
+ ''  as  Fourth_AA_Dr_Code  ,  /*第四麻醉助理医生工号*/
+ ''  as  First_Tour_Nurse_Index_No  ,  /*第一巡回护士索引号*/
+ ''  as  First_Tour_Nurse_Code  ,  /*第一巡回护士工号*/
+Itinerant_nurse  as  First_Tour_Nurse_Name  ,  /*第一巡回护士姓名*/
+ ''  as  Second_Tour_Nurse_Index_No  ,  /*第二巡回护士索引号*/
+ ''  as  Second_Tour_Nurse_Code  ,  /*第二巡回护士工号*/
+ ''  as  Second_Tour_Nurse_Name  ,  /*第二巡回护士姓名*/
+ ''  as  First_Inst_Nurse_Index_No  ,  /*第一器械护士索引号*/
+ ''  as  First_Inst_Nurse_Code  ,  /*第一器械护士工号*/
+ ''  as  Second_Inst_Nurse_Index_No  ,  /*第二器械护士索引号*/
+ ''  as  Second_Inst_Nurse_Code  ,  /*第二器械护士工号*/
+ ''  as  Third_Inst_Nurse_Index_No  ,  /*第三器械护士索引号*/
+ ''  as  Third_Inst_Nurse_Code  ,  /*第三器械护士工号*/
+ ''  as  Blood_Transfer_Dr_Index_No  ,  /*输血医生索引号*/
+ ''  as  Blood_Transfer_Dr_Code  ,  /*输血医生工号*/
+ ''  as  Surgery_Status_Flag  ,  /*手术状态标志*/
+ ''  as  Infect_Flag  ,  /*感染标识*/
+ ''  as  Charge_Flag    /*收费标志*/
+
+FROM L_TJ_RM
+where operation_End_time >= '2017-01-01'
