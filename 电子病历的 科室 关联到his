@@ -1,0 +1,4 @@
+select *
+from emr_sb.QC_remind a,emr_sb.org_department e,his_sb.com_department f
+where  a.dept_id = e.id
+and e.dept_code = f.dept_code
