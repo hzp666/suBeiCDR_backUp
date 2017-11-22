@@ -1,0 +1,4 @@
+select  a.visit_id,a.visit_type,
+decode(a.visit_type,'1',(select x.inpatient_code from emr_sb.pt_inpatient_cure x where a.visit_id = x.id),null) as Inhosp_No,
+decode(a.visit_type,'2',(select x.outpatient_code from emr_sb.pt_outpatient_cure x where a.visit_id = x.id),null) as Visit_No
+ from emr_sb.DIAG_CREATION a
