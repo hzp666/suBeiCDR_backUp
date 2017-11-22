@@ -1,0 +1,5 @@
+select * 
+from emr_sb.QC_remind a,emr_sb.QCM_SCORE_ITEM b,emr_sb.pt_inpatient_cure c ,his_sb.fin_ipr_inmaininfo d  
+where b.id=a.SCOREITEM_ID 
+and a.patient_id = c.patient_id
+and c.inpatient_code = d.inpatient_no
