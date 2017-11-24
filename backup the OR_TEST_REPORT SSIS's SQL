@@ -1,0 +1,60 @@
+SELECT 
+  '' as Key_ID,
+ '' as MI_Code,
+a.SampleNo as Test_Report_No,
+a.serialno as Test_Requisition_No,
+null as EMPI_ID,
+null as Visit_Card_No,
+a.zdy4 as Visit_No,
+CASE WHEN a.zdy3 = a.zdy4 THEN NULL ELSE a.zdy3 END as Inhosp_No,
+ '' as Visit_Num,
+null as MR_No,
+a.CName as Pat_Name,
+a.GenderNo as Sex_Name,
+a.Birthday as Date_Birth,
+ '' as Test_Tube_Barcode,
+(SELECT min(p.supergroupno)
+FROM lis.pgroup p  WHERE p.sectionno = a.SECTIONNO) as Test_Item_Type_Code,
+(SELECT min(s.cname)
+FROM lis.pgroup p,lis.supergroup s WHERE p.supergroupno = s.supergroupno and p.sectionno = a.SECTIONNO) AS Test_Item_Type_Name,
+b.parItemNO as Test_Item_Code,
+(SELECT min(c.CName) FROM lis.testitem c WHERE c.itemno = b.parItemNO) AS Test_Item_Name,
+b.itemNo as Test_Detail_Item_Code,
+(SELECT MIN(CName) FROM lis.testitem c WHERE b.itemno = c.itemno) 
+        AS Test_Detail_Item_Name,
+null as Test_Dept_Index_No,
+null  as Test_Dept_Code,
+null as Test_Dept_Name,
+null as Test_Dr_Index_No,
+null  as Test_Dr_Code,
+a.technician as Test_Dr_Name,
+a.checkdate as Report_Date,
+a.Doctor as Report_Dr_Index_No,
+null as Report_Dr_Code,
+a.operator  as Report_Dr_Name,
+nvl2(a.checkdate,1,0) as Test_Result_Status_Code,
+ '' as Microbe_Name,
+null as Bacteria_Cultivate_Result,
+ '' as Bacterial_Colony_Count,
+ '' as Smear_Result,
+ '' as MIC,
+ '' as Diameter,
+ '' as Normal_Value_Upper_Limit,
+ '' as Normal_Value_Lower_Limit,
+ b.RefRange as Reference_Value,
+ CASE WHEN b.ResultStatus LIKE '%H%' THEN 'h' 
+      WHEN b.ResultStatus LIKE '%L%' THEN 'l'
+      ELSE 'z' END   as Normal_Flag,
+b.ReportValue as Test_Result_Value,
+(SELECT MIN(unit) FROM lis.testitem c WHERE b.itemno = c.itemno) as Test_Result_Value_Unit,
+b.ReportDesc as Test_Result,
+case when a.zdy4 is null then CASE WHEN a.zdy3 = a.zdy4 THEN NULL ELSE a.zdy3 END else a.zdy4 end as Encounter_ID,
+ a.serialno || '_' || b.parItemNO as Requisition_Item,
+ (sELECT c.DispOrder FROM lis.testitem c WHERE b.itemno = c.itemno) as Print_Seq,
+b.receivedate as Receive_Date 
+FROM lis.ReportItem b
+LEFT JOIN  lis.ReportForm a ON b.RECEIVEDATE = a.RECEIVEDATE
+           AND b.SECTIONNO = a.SECTIONNO 
+           AND b.TESTTYPENO = a.TESTTYPENO 
+           AND b.SAMPLENO = a.SAMPLENO
+where b.receivedate >= to_date('2017-10-01','yyyy-mm-dd')
