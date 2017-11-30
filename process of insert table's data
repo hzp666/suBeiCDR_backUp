@@ -1,0 +1,29 @@
+USE [CDR]
+GO
+/****** Object:  StoredProcedure [dbo].[Proc_Insert_IM_Department]    Script Date: 11/30/2017 15:10:02 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[Proc_Insert_IM_ABO_Blood](@CODE nvarchar(500))
+as
+begin
+declare @sql varchar(max) = ''
+set @sql =
+'insert into IM_ABO_Blood(MI_CODE,
+MI_NAME,
+ABO_CODE,
+ABO_NAME)'
++
+'select * from openquery(his,''
+select  cast( ''''321002468830683'''' as varchar(50)) as MI_Code, 
+cast( ''''苏北人民医院'''' as varchar(100)) as MI_Name, 
+cast(code as varchar(10)) as ABO_Code, 
+cast(name as varchar(20)) as ABO_Name
+from his_sb.com_dictionary c where c.type =''''BloodKindCode'''' AND C.Code='''''
++ isnull(@CODE,'') + '''''''
+)'
+--print @sql
+exec(@sql)
+--exec Proc_Insert_IM_ABO_Blood ''
+end;
