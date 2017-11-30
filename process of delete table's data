@@ -1,0 +1,13 @@
+USE [CDR]
+GO
+/****** Object:  StoredProcedure [dbo].[Proc_Delete_IM_ABO_Blood]    Script Date: 11/30/2017 16:09:30 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[Proc_Delete_IM_ABO_Blood](@CODE nvarchar(500))
+as
+begin 
+--根据传参删除cdr中im_department表中的记录
+delete from IM_ABO_Blood where ABO_CODE = @CODE 
+end;
