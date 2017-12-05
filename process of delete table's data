@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROC [dbo].[Proc_Delete_IM_ABO_Blood](@CODE nvarchar(500))
+create PROC [dbo].[Proc_IM_ABO_Blood_Delete](@CODE nvarchar(500))
 as
 begin 
 --根据传参删除cdr中im_department表中的记录
