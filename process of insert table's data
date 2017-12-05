@@ -25,5 +25,5 @@ from his_sb.com_dictionary c where c.type =''''BloodKindCode'''' AND C.Code=''''
 )'
 --print @sql
 exec(@sql)
---exec Proc_Insert_IM_ABO_Blood ''
+--exec Proc_IM_ABO_Blood_Insert ''
 end;
