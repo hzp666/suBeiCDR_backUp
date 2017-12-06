@@ -1,0 +1,38 @@
+USE [CDR]
+GO
+/****** Object:  StoredProcedure [dbo].[Proc_IM_Ethnic_Insert]    Script Date: 12/06/2017 15:46:21 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+alter PROC [dbo].[Proc_IM_Medical_Team_Insert](@MEDICAL_TEAM_CODE nvarchar(8),@DEPT_CODE nvarchar(4)) 
+as
+begin
+declare @sql varchar(max) = ''
+set @sql =
+'insert into IM_Medical_Team(
+		
+	[MI_CODE]
+      ,[MI_NAME]
+      ,[MEDICAL_TEAM_CODE]
+      ,[MEDICAL_TEAM_NAME]
+      ,[DISABLE_FLAG]
+      ,[Dept_Code]
+      ,[Dept_Name]
+)'
++
+'select * from openquery(his,''
+select  cast( ''''321002468830683'''' as varchar(50)) as MI_Code, 
+cast( ''''苏北人民医院'''' as varchar(100)) as MI_Name, 
+a.MEDICAL_TEAM_CODE as Medical_Team_Code,
+a.MEDICAL_TEAM_NAME as Medical_Team_Name,
+CAST(a.dept_code AS VARCHAR(20)) AS Dept_Code,
+CAST(a.dept_name AS VARCHAR(50)) AS Dept_Name, 
+decode(a.VALID_FLAG,''''1'''',''''0'''',''''1'''') as Disable_Flag
+from his_sb.met_ipm_medicalteam a where a.Medical_Team_Code='''''
++ isnull(@Medical_Team_Code,'') +'and a.dept_code='+ isnull(@DEPT_CODE,'')+'''''''
+)'
+print @sql
+--exec(@sql)
+--exec Proc_IM_Medical_Team_Insert '',''
+end;
