@@ -1,0 +1,99 @@
+--抗菌药用药强度DDD值  抗菌药物消耗量（累计DDD数）5
+SELECT AA.dc, 0, 0 as kjywpzs, 0, 0, SUM(AA.DXH) as sdxh, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+FROM (select f1.inhos_deptcode as dc,
+               f1.drug_name,
+               round(sum(f1.qty) * (decode(a1.dose_unit,'MU',a1.base_dose/0.8*0.48,'mg', a1.base_dose/1000,'TU',a1.base_dose/800*0.48, a1.base_dose)) / a1.ddd_value, 2) as dxh
+          from HIS_SB.fin_ipb_medicinelist f1,
+               HIS_SB.pha_com_antibacteria a1,
+               HIS_SB.PHA_COM_BASEINFO     b1,
+               HIS_SB.FIN_IPR_INMAININFO   t1
+         where f1.inpatient_no = t1.inpatient_no
+           and f1.drug_code = b1.drug_code
+           and b1.atc_no = a1.kj_code
+           and b1.item_grade in ('1','2','3')
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >= TRUNC(sysdate - 1)
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < TRUNC(sysdate)
+           --and not exists (select 1 from HIS_SB.fin_ipb_medicinelist b2 where b2.his_cancel_recipe_no = b.recipe_no )
+         group by f1.inhos_deptcode,f1.drug_name,a1.ddd_value,a1.dose_unit,a1.base_dose
+         ) AA
+group by AA.dc
+-----------------------------------------------------------------------------  
+union all
+--同期收治患者人天数6
+SELECT TABLE3.sdc as dc, 
+       0, 0 as kjywpzs, 0, 0, 0,
+       SUM(TABLE3.住院天数) as tqszrts,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  FROM (SELECT TABLE2.患者,
+               /*(SELECT MT.MEDICAL_TEAM_CODE
+                  FROM MET_IPM_MEDICALTEAM MT
+                 where mt.medical_team_code = TABLE2.medicalteam_code) 医疗组,*/
+               TABLE2.tdc as sdc,
+               TABLE2.开始日期,
+               TABLE2.结束日期,
+               TABLE2.住院天数,
+               TABLE2.总开始日期,
+               TABLE2.总结束日期 as endate,
+               TABLE2.总住院天数,
+               TABLE2.住院天数 /
+               DECODE(TABLE2.总住院天数, 0, 1, TABLE2.总住院天数) 病人数
+          FROM (SELECT distinct TABLE1.患者,
+                                TABLE1.医生,
+                                TABLE1.开始日期,
+                                TABLE1.结束日期,
+                                TRUNC(TABLE1.结束日期) - TRUNC(TABLE1.开始日期) 住院天数,
+                                TABLE1.总开始日期,
+                                TABLE1.总结束日期,
+                                TRUNC(TABLE1.总结束日期) - TRUNC(TABLE1.总开始日期) 总住院天数,
+                                --min(i.medicalteam_code) medicalteam_code
+                                i.inhos_deptcode as tdc
+                  FROM (SELECT RI.INPATIENT_NO 患者,
+                               NVL(RI.HOUSE_DOC_CODE,
+                                   (SELECT RI2.HOUSE_DOC_CODE
+                                      FROM HIS_SB.FIN_IPR_RECEIVEINFO RI2
+                                     WHERE RI2.INPATIENT_NO = RI.INPATIENT_NO
+                                       AND RI2.HAPPEN_NO = RI.HAPPEN_NO + 1)) 医生,
+                               DECODE(RI.HAPPEN_NO,
+                                      1,
+                                      (SELECT M2.In_Register_Time
+                                         FROM HIS_SB.FIN_IPR_INMAININFO M2
+                                        WHERE M2.INPATIENT_NO = RI.INPATIENT_NO),
+                                      RI.OPER_DATE) 开始日期,
+                               NVL((SELECT RI1.OPER_DATE
+                                     FROM HIS_SB.FIN_IPR_RECEIVEINFO RI1
+                                    WHERE RI1.INPATIENT_NO = RI.INPATIENT_NO
+                                      AND RI1.HAPPEN_NO = RI.HAPPEN_NO + 1),
+                                   (SELECT TO_DATE(M1.EXT_CODE,
+                                                   'yyyy-MM-dd hh24:mi:ss')
+                                      FROM HIS_SB.FIN_IPR_INMAININFO M1
+                                     WHERE M1.INPATIENT_NO = RI.INPATIENT_NO)) 结束日期,
+                               (SELECT M1.In_Register_Time
+                                  FROM HIS_SB.FIN_IPR_INMAININFO M1
+                                 WHERE M1.INPATIENT_NO = RI.INPATIENT_NO) 总开始日期,
+                               (SELECT TO_DATE(M1.EXT_CODE,
+                                               'yyyy-MM-dd hh24:mi:ss')
+                                  FROM HIS_SB.FIN_IPR_INMAININFO M1
+                                 WHERE M1.INPATIENT_NO = RI.INPATIENT_NO) 总结束日期
+                          FROM HIS_SB.FIN_IPR_RECEIVEINFO RI, HIS_SB.FIN_IPR_INMAININFO M
+                         WHERE RI.INPATIENT_NO = M.INPATIENT_NO
+                           and m.in_state in ('O', 'B')
+                           --and substr(m.inpatient_no, 5, 1) <> 'B'
+                           AND TO_DATE(M.EXT_CODE, 'yyyy-MM-dd hh24:mi:ss') >= TRUNC(sysdate - 1)
+                           AND TO_DATE(M.EXT_CODE, 'yyyy-MM-dd hh24:mi:ss') < TRUNC(sysdate)
+                         ORDER BY RI.INPATIENT_NO, RI.HAPPEN_NO) TABLE1,
+                       his_sb.fin_ipb_itemlist i
+                 where TABLE1.患者 = i.inpatient_no
+                   and TABLE1.医生 = i.recipe_doccode
+                   and i.fee_date >= TABLE1.开始日期
+                   and i.fee_date <= TABLE1.结束日期
+                 group by TABLE1.患者,
+                          TABLE1.医生,
+                          TABLE1.开始日期,
+                          TABLE1.结束日期,
+                          TABLE1.总开始日期,
+                          TABLE1.总结束日期,
+                          i.inhos_deptcode) TABLE2) TABLE3
+ GROUP BY TABLE3.sdc
+-----------------------------
+
+
