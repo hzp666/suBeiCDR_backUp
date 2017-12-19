@@ -1,26 +1,35 @@
---抗菌药用药强度DDD值  抗菌药物消耗量（累计DDD数）5
-SELECT AA.dc, 0, 0 as kjywpzs, 0, 0, SUM(AA.DXH) as sdxh, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+SELECT x.dc,x.name,x.sdxh
+FROM (
+SELECT AA.dc, AA.NAME,0, 0 as kjywpzs, 0, 0, SUM(AA.DXH) as sdxh, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 FROM (select f1.inhos_deptcode as dc,
+             H2.DEPT_NAME AS NAME,
                f1.drug_name,
                round(sum(f1.qty) * (decode(a1.dose_unit,'MU',a1.base_dose/0.8*0.48,'mg', a1.base_dose/1000,'TU',a1.base_dose/800*0.48, a1.base_dose)) / a1.ddd_value, 2) as dxh
           from HIS_SB.fin_ipb_medicinelist f1,
                HIS_SB.pha_com_antibacteria a1,
                HIS_SB.PHA_COM_BASEINFO     b1,
-               HIS_SB.FIN_IPR_INMAININFO   t1
+               HIS_SB.FIN_IPR_INMAININFO   t1,
+               his_sb.com_department H2  
          where f1.inpatient_no = t1.inpatient_no
+         AND f1.inhos_deptcode   = H2.DEPT_CODE
            and f1.drug_code = b1.drug_code
            and b1.atc_no = a1.kj_code
            and b1.item_grade in ('1','2','3')
-           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >= TRUNC(sysdate - 1)
-           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < TRUNC(sysdate)
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >= to_date('2017-06-01','yyyy-mm-dd hh24:mi:ss')
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < to_date('2017-07-01','yyyy-mm-dd hh24:mi:ss')
            --and not exists (select 1 from HIS_SB.fin_ipb_medicinelist b2 where b2.his_cancel_recipe_no = b.recipe_no )
-         group by f1.inhos_deptcode,f1.drug_name,a1.ddd_value,a1.dose_unit,a1.base_dose
+         group by f1.inhos_deptcode,f1.drug_name,a1.ddd_value,a1.dose_unit,a1.base_dose,H2.DEPT_NAME 
          ) AA
-group by AA.dc
+group by AA.dc,AA.NAME) x WHERE x.dc = '1098'
+
+
 -----------------------------------------------------------------------------  
-union all
+============================================================================================================
+
+
+
 --同期收治患者人天数6
-SELECT TABLE3.sdc as dc, 
+SELECT TABLE3.sdc as dc, NULL AS NAME,
        0, 0 as kjywpzs, 0, 0, 0,
        SUM(TABLE3.住院天数) as tqszrts,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -78,8 +87,8 @@ SELECT TABLE3.sdc as dc,
                          WHERE RI.INPATIENT_NO = M.INPATIENT_NO
                            and m.in_state in ('O', 'B')
                            --and substr(m.inpatient_no, 5, 1) <> 'B'
-                           AND TO_DATE(M.EXT_CODE, 'yyyy-MM-dd hh24:mi:ss') >= TRUNC(sysdate - 1)
-                           AND TO_DATE(M.EXT_CODE, 'yyyy-MM-dd hh24:mi:ss') < TRUNC(sysdate)
+                           AND TO_DATE(M.EXT_CODE, 'yyyy-MM-dd hh24:mi:ss') >= to_date('2017-06-01','yyyy-mm-dd hh24:mi:ss')
+                           AND TO_DATE(M.EXT_CODE, 'yyyy-MM-dd hh24:mi:ss') < to_date('2017-07-01','yyyy-mm-dd hh24:mi:ss')
                          ORDER BY RI.INPATIENT_NO, RI.HAPPEN_NO) TABLE1,
                        his_sb.fin_ipb_itemlist i
                  where TABLE1.患者 = i.inpatient_no
@@ -94,6 +103,7 @@ SELECT TABLE3.sdc as dc,
                           TABLE1.总结束日期,
                           i.inhos_deptcode) TABLE2) TABLE3
  GROUP BY TABLE3.sdc
+ 
 -----------------------------
 
 
