@@ -1,0 +1,20 @@
+科室代码	HIS_SB.fin_ipb_medicinelist 	f1	f1.inhos_deptcode as dc				
+药品名称	HIS_SB.fin_ipb_medicinelist 	f1	 f1.drug_name				
+数量	HIS_SB.fin_ipb_medicinelist 	f1	f1.qty				
+计量单位	HIS_SB.pha_com_antibacteria 	a1	a1.dose_unit				
+单剂量	HIS_SB.pha_com_antibacteria 	a1	a1.BASE_DOSE				
+DDD值	HIS_SB.pha_com_antibacteria 	a1	a1.ddd_value				
+项目等级，1甲类，2乙类，3丙类 HIS4.5整合 存储药品等级(与医生职级对应)	HIS_SB.PHA_COM_BASEINFO  	b1	b1.item_grade in ('1','2','3')				
+时间条件	 HIS_SB.FIN_IPR_INMAININFO 	t1	to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss')				
+							
+							
+药品编码	IM_Drug	c	c.DRUG_CODE	his_sb.fin_ipb_mEDICINELIST	cast(a.PACK_QTY as numeric(10,2)) as Amount		
+数量	FM_InHospital_Fee_Detail	a	a.amount				
+计量单位	IM_Drug	c	c.KSS_Base_Dosage_Unit	his_sb.pha_com_antibacteria	b.dose_unit as KSS_Base_Dosage_Unit,		
+单剂量	IM_Drug	c	c.KSS_Base_Dosage	his_sb.pha_com_antibacteria	b.base_dose as KSS_Base_Dosage		
+DDD值	IM_Drug	c	c.ddd_value	his_sb.pha_com_antibacteria	cast( b.ddd_value as varchar(20)) as DDD_Value		
+项目等级	IM_Drug	c	c.ANTIBAC_FLAG	his_sb.pha_com_antibacteria	cast(case when a.item_grade in ('1','2','3') and b.ddd_value is not null then 1 else 0 end as varchar(2)) as Antibac_Flag		
+时间条件	PA_Discharge_Info	b	cast(b.Discharge_Date as date) as discharge_date1	 his_sb.FIN_IPR_INMAININFO	to_date(ext_code,'yyyy-mm-dd hh24:mi:ss') as Discharge_Date		
+							
+限制条件	IM_Drug	c	c.ddd_value is not null				
+DDDS药物使用强度来源	fact_pa_discharge_dds		ddds列的总和				
