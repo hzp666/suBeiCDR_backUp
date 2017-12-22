@@ -1,0 +1,49 @@
+DDDS抗菌药物强度CDR的查询sql文
+
+select sum(aa.ddds) 
+
+from
+(select 
+a.INHOS_DEPT_CODE,
+c.DRUG_CODE,
+
+cast((case when c.KSS_Base_Dosage_Unit = 'mg' then a.amount * c.KSS_Base_Dosage/1000
+		  when c.KSS_Base_Dosage_Unit = 'MU' then a.amount * c.KSS_Base_Dosage/0.8*0.48
+		  when c.KSS_Base_Dosage_Unit = 'TU' then a.amount * c.KSS_Base_Dosage/800*0.48
+		  else a.amount * c.KSS_Base_Dosage end
+)/c.ddd_value as decimal(12,4)) as DDDs
+
+from FM_InHospital_Fee_Detail a, PA_Discharge_Info b,IM_Drug c
+where a.INHOSP_NO = b.Inhosp_No and a.charge_item_code = c.DRUG_CODE  
+and c.ddd_value is not null and c.ANTIBAC_FLAG = '1'  and a.DRUG_FLAG = '1'
+and  a.inhos_dept_code = '1133'
+and b.Discharge_Date >= '2017-06-01'
+and b.Discharge_Date <= '2017-07-01'
+) aa;
+
+
+
+
+
+
+=========Oracle信息科给的DDDS抗菌药物 SQL文=============
+--抗菌药用药强度DDD值  抗菌药物消耗量（累计DDD数）5
+SELECT AA.dc, 0, 0 as kjywpzs, 0, 0, SUM(AA.DXH) as sdxh, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+FROM (select f1.inhos_deptcode as dc,
+               f1.drug_name,
+               round(sum(f1.qty) * (decode(a1.dose_unit,'MU',a1.base_dose/0.8*0.48,'mg', a1.base_dose/1000,'TU',a1.base_dose/800*0.48, a1.base_dose)) / a1.ddd_value, 2) as dxh
+          from fin_ipb_medicinelist f1,
+               pha_com_antibacteria a1,
+               pha_com_baseinfo     b1,
+               fin_ipr_inmaininfo   t1
+         where f1.inpatient_no = t1.inpatient_no
+           and f1.drug_code = b1.drug_code
+           and b1.atc_no = a1.kj_code
+           and b1.item_grade in ('1','2','3')
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >= TRUNC(sysdate - 1)
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < TRUNC(sysdate)
+           --and not exists (select 1 from fin_ipb_medicinelist b2 where b2.his_cancel_recipe_no = b.recipe_no )
+         group by f1.inhos_deptcode,f1.drug_name,a1.ddd_value,a1.dose_unit,a1.base_dose
+         ) AA
+		 	 
+group by AA.dc
