@@ -8,8 +8,8 @@ DDD值	HIS_SB.pha_com_antibacteria 	a1	a1.ddd_value
 时间条件	 HIS_SB.FIN_IPR_INMAININFO 	t1	to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss')				
 							
 							
-药品编码	IM_Drug	c	c.DRUG_CODE	his_sb.fin_ipb_mEDICINELIST	cast(a.PACK_QTY as numeric(10,2)) as Amount		
-数量	FM_InHospital_Fee_Detail	a	a.amount				
+药品编码	IM_Drug	c	c.DRUG_CODE			
+数量	FM_InHospital_Fee_Detail	a	a.amount	his_sb.fin_ipb_mEDICINELIST	cast(a.PACK_QTY as numeric(10,2)) as Amount			
 计量单位	IM_Drug	c	c.KSS_Base_Dosage_Unit	his_sb.pha_com_antibacteria	b.dose_unit as KSS_Base_Dosage_Unit,		
 单剂量	IM_Drug	c	c.KSS_Base_Dosage	his_sb.pha_com_antibacteria	b.base_dose as KSS_Base_Dosage		
 DDD值	IM_Drug	c	c.ddd_value	his_sb.pha_com_antibacteria	cast( b.ddd_value as varchar(20)) as DDD_Value		
