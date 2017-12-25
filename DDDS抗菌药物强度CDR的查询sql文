@@ -17,8 +17,8 @@ from FM_InHospital_Fee_Detail a, PA_Discharge_Info b,IM_Drug c
 where a.INHOSP_NO = b.Inhosp_No and a.charge_item_code = c.DRUG_CODE  
 and c.ddd_value is not null and c.ANTIBAC_FLAG = '1'  and a.DRUG_FLAG = '1'
 and  a.inhos_dept_code = '1133'
-and b.Discharge_Date >= '2017-06-01'
-and b.Discharge_Date <= '2017-07-01'
+and b.Discharge_Date >= '2017-06-01 00:00:00'
+and b.Discharge_Date <= '2017-07-01 00:00:00'
 ) aa;
 
 
@@ -67,8 +67,8 @@ FROM (select f1.inhos_deptcode as dc,
            and f1.drug_code = b1.drug_code
            and b1.atc_no = a1.kj_code
            and b1.item_grade in ('1','2','3')
-           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >= to_date('2017-06-01','yyyy-mm-dd hh24:mi:ss')
-           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < to_date('2017-07-01','yyyy-mm-dd hh24:mi:ss')
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >=  to_date('2017-06-01 00:00:00','yyyy-mm-dd hh24:mi:ss')
+           and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < to_date('2017-07-01 00:00:00','yyyy-mm-dd hh24:mi:ss')
            --and not exists (select 1 from HIS_SB.fin_ipb_medicinelist b2 where b2.his_cancel_recipe_no = b.recipe_no )
          group by f1.inhos_deptcode,f1.drug_name,a1.ddd_value,a1.dose_unit,a1.base_dose,H2.DEPT_NAME 
          ) AA
