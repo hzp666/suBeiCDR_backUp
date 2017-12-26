@@ -15,38 +15,41 @@ cast((case when c.KSS_Base_Dosage_Unit = 'mg' then sum(a.amount) * c.KSS_Base_Do
 a.amount,
 sum(a.amount) as c1,
 c.KSS_Base_Dosage_Unit,
-c.KSS_Base_Dosage
+c.KSS_Base_Dosage,
+c.ddd_value
 from FM_InHospital_Fee_Detail a, PA_Discharge_Info b,IM_Drug c
 where a.INHOSP_NO = b.Inhosp_No and a.charge_item_code = c.DRUG_CODE  
 and c.ddd_value is not null and c.ANTIBAC_FLAG = '1'  and a.DRUG_FLAG = '1'
-and  a.inhos_dept_code = '1027'
+and  a.inhos_dept_code = '1045'
 and b.Discharge_Date >= '2017-06-01 00:00:00'
 and b.Discharge_Date <= '2017-07-01 00:00:00'
 
 group by a.INHOS_DEPT_CODE,
 c.KSS_Base_Dosage_Unit,
 a.AMOUNT,
-c.KSS_Base_Dosage_Unit,
 c.KSS_Base_Dosage,
-c.ddd_value,
-c.KSS_Base_Dosage_Unit,
-c.KSS_Base_Dosage
+c.ddd_value
+
+
 ) aa
 
-order by amount;
+order by amount,ddd_value,KSS_Base_Dosage;
+
+
 
 
 ==========Oracle中 DDDS抗菌药物强度 的明细字段对照=============================
 
 SELECT *
 FROM (
-SELECT AA.dc,AA.DXH,AA.qty,AA.c1,AA.dose_unit,AA.base_dose
+SELECT AA.dc,AA.DXH,AA.qty,AA.c1,AA.dose_unit,AA.base_dose,AA.ddd_value
 FROM (select f1.inhos_deptcode as dc,
              sum(f1.qty) as c1,
                
                f1.QTY,
                a1.dose_unit,
                a1.base_dose,
+               a1.ddd_value,
                sum(f1.qty) * (decode(a1.dose_unit,'MU',a1.base_dose/0.8*0.48,'mg', a1.base_dose/1000,'TU',a1.base_dose/800*0.48, a1.base_dose)) / a1.ddd_value as dxh
           from HIS_SB.fin_ipb_medicinelist f1,
                HIS_SB.pha_com_antibacteria a1,
@@ -61,9 +64,9 @@ FROM (select f1.inhos_deptcode as dc,
            and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') >= to_date('2017-06-01 00:00:00','yyyy-mm-dd hh24:mi:ss')
            and to_date(t1.ext_code, 'yyyy-mm-dd hh24:mi:ss') < to_date('2017-07-01 00:00:00','yyyy-mm-dd hh24:mi:ss')
            --and not exists (select 1 from HIS_SB.fin_ipb_medicinelist b2 where b2.his_cancel_recipe_no = b.recipe_no )
-         group by f1.inhos_deptcode,a1.ddd_value,a1.dose_unit,a1.base_dose,f1.QTY,
-               a1.dose_unit,
-               a1.base_dose 
+         group by f1.inhos_deptcode,a1.ddd_value,a1.dose_unit,a1.base_dose,f1.QTY
+               
+               
          ) AA
-group by AA.dc,AA.DXH,AA.qty,AA.c1,AA.dose_unit,AA.base_dose) x WHERE x.dc = '1027'  
-order by qty
+group by AA.dc,AA.DXH,AA.qty,AA.c1,AA.dose_unit,AA.base_dose,AA.ddd_value) x WHERE x.dc = '1045'  
+order by qty,ddd_value,base_dose
