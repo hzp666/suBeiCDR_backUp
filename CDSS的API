@@ -1,0 +1,553 @@
+--  Drop Tables, Stored Procedures and Views 
+
+DROP TABLE IF EXISTS his_assay_detail_info
+;
+DROP TABLE IF EXISTS his_assay_header_info
+;
+DROP TABLE IF EXISTS his_dept_info
+;
+DROP TABLE IF EXISTS his_disease_info
+;
+DROP TABLE IF EXISTS his_drug_frequency
+;
+DROP TABLE IF EXISTS his_drug_giveway
+;
+DROP TABLE IF EXISTS his_drug_info
+;
+DROP TABLE IF EXISTS his_examine_info
+;
+DROP TABLE IF EXISTS pat_advice_info
+;
+DROP TABLE IF EXISTS pat_allergy_history
+;
+DROP TABLE IF EXISTS pat_assay_report
+;
+DROP TABLE IF EXISTS pat_assay_request
+;
+DROP TABLE IF EXISTS pat_diagnose
+;
+DROP TABLE IF EXISTS pat_examine_report
+;
+DROP TABLE IF EXISTS pat_examine_request
+;
+DROP TABLE IF EXISTS pat_info
+;
+DROP TABLE IF EXISTS pat_inhos_info
+;
+DROP TABLE IF EXISTS pat_prescription_info
+;
+DROP TABLE IF EXISTS pat_visit_info
+;
+
+--  Create Tables 
+CREATE TABLE his_assay_detail_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	detail_id VARCHAR(50) COMMENT '子项id',
+	cdss_detail_id INTEGER COMMENT 'CDSS检验明细项ID',
+	detail_code VARCHAR(50) COMMENT '子项代码',
+	detail_name VARCHAR(200) COMMENT '子项名称',
+	header_id VARCHAR(50) COMMENT '检验项目ID',
+	spell VARCHAR(50) COMMENT '简拼',
+	del_flag NUMERIC(1) DEFAULT 0 COMMENT '作废标识(0有效,1作废)',
+	PRIMARY KEY (id)
+)  COMMENT='HIS检验子项目信息表'
+;
+
+
+CREATE TABLE his_assay_header_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	assay_id VARCHAR(50) COMMENT '检验项目ID',
+	cdss_assay_id INTEGER COMMENT 'CDSS检验项目ID',
+	assay_code VARCHAR(50) COMMENT '检验项目编码',
+	assay_name VARCHAR(200) COMMENT '检验项目名称',
+	assay_type_code VARCHAR(50) COMMENT '检验分类代码',
+	assay_type_name VARCHAR(200) COMMENT '检验分类名称',
+	spell VARCHAR(50) COMMENT '简拼',
+	del_flag NUMERIC(1) DEFAULT 0 COMMENT '作废标识(0有效,1作废)',
+	PRIMARY KEY (id)
+)  COMMENT='HIS检验项目套餐信息表'
+;
+
+
+CREATE TABLE his_dept_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT 'id',
+	dept_id VARCHAR(50) COMMENT '科室ID',
+	dept_code VARCHAR(50) COMMENT '科室代码',
+	dept_name VARCHAR(50) COMMENT '科室名',
+	full_name VARCHAR(50) COMMENT '科室全名',
+	spell VARCHAR(50) COMMENT '科室简拼',
+	dept_type DECIMAL(2) DEFAULT 1 COMMENT '科室类型（1:科室、2:病区、3:药房、4:药库）',
+	parent_id VARCHAR(50) COMMENT '上级科室',
+	creator VARCHAR(50) COMMENT '创建人',
+	create_time DATETIME COMMENT '创建时间',
+	del_flag DECIMAL(1) DEFAULT 0 COMMENT '删除标记，0：未删除，1：删除',
+	PRIMARY KEY (id)
+)  COMMENT='科室表'
+;
+
+
+CREATE TABLE his_disease_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT 'ID主键',
+	disease_id VARCHAR(50) COMMENT '疾病id',
+	cdss_disease_id INTEGER COMMENT 'CDSS系统疾病ID',
+	disease_code VARCHAR(50) COMMENT '疾病编码',
+	disease_name VARCHAR(200) COMMENT '疾病名称',
+	icd_code VARCHAR(50) COMMENT 'ICD编码',
+	icd_name VARCHAR(200) COMMENT 'ICD中文描述',
+	spell VARCHAR(50) COMMENT '简拼',
+	del_flag NUMERIC(1) DEFAULT 0 COMMENT '作废标识(0有效,1作废)',
+	PRIMARY KEY (id)
+)  COMMENT='HIS疾病信息表'
+;
+
+
+CREATE TABLE his_drug_frequency
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT 'id',
+	cdss_frequency_code VARCHAR(255) COMMENT 'CDSS频次代码',
+	frequency_code VARCHAR(255) COMMENT '频次代码',
+	frequency_name VARCHAR(255) COMMENT '频次名称',
+	short_name VARCHAR(100) COMMENT '简写',
+	day_times INTEGER COMMENT '每天次数',
+	order_no INTEGER COMMENT '顺序号',
+	PRIMARY KEY (id)
+)  COMMENT='HIS给药频次'
+;
+
+
+CREATE TABLE his_drug_giveway
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT 'id',
+	cdss_giveway_code VARCHAR(255) COMMENT 'CDSS给药途径代码',
+	giveway_code VARCHAR(255) COMMENT '给药途径代码',
+	giveway_name VARCHAR(255) COMMENT '给药途径名称',
+	short_name VARCHAR(100) COMMENT '简写',
+	order_no INTEGER COMMENT '顺序号',
+	PRIMARY KEY (id)
+)  COMMENT='HIS给药途径'
+;
+
+
+CREATE TABLE his_drug_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT 'ID主键',
+	drug_id VARCHAR(50) COMMENT '药品ID',
+	cdss_drug_id INTEGER COMMENT 'CDSS系统药品ID',
+	drug_code VARCHAR(50) COMMENT '药品编号',
+	drug_name VARCHAR(200) COMMENT '药品名称',
+	commodity_name VARCHAR(200) COMMENT '商品名',
+	chemical_name VARCHAR(200) COMMENT '化学名',
+	spell VARCHAR(200) COMMENT '汉语拼音',
+	spec VARCHAR(200) COMMENT '规格',
+	unit VARCHAR(50) COMMENT '药品单位',
+	dose VARCHAR(50) COMMENT '剂型',
+	produce_area VARCHAR(200) COMMENT '产地',
+	approval_no VARCHAR(50) COMMENT '批准文号',
+	is_antibacterial DECIMAL(1) DEFAULT 0 COMMENT '是否抗菌药物 0：否，1：是',
+	drug_level DECIMAL(1) DEFAULT 0 COMMENT '抗菌药物分级 0，1，2',
+	del_flag NUMERIC(1) DEFAULT 0 COMMENT '作废标识(0有效,1作废)',
+	PRIMARY KEY (id)
+)  COMMENT='HIS药品字典表'
+;
+
+
+CREATE TABLE his_examine_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	examine_id VARCHAR(50) COMMENT '检查id',
+	cdss_examine_id INTEGER COMMENT 'CDSS检查项目ID',
+	examine_code VARCHAR(50) COMMENT '检查项目代码',
+	examine_name VARCHAR(200) COMMENT '检查名称',
+	examine_type_code VARCHAR(50) COMMENT '检查分类代码',
+	examine_type_name VARCHAR(200) COMMENT '检查分类名称',
+	spell VARCHAR(50) COMMENT '简拼',
+	del_flag NUMERIC(1) DEFAULT 0 COMMENT '作废标识(0有效,1作废)',
+	PRIMARY KEY (id)
+)  COMMENT='HIS检查信息表'
+;
+
+
+CREATE TABLE pat_advice_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	advice_id VARCHAR(50) COMMENT '医嘱流水号',
+	advice_type VARCHAR(50) COMMENT '医嘱类型 药品医嘱/检验检查医嘱/护理医嘱等',
+	temp_flag NUMERIC(1) DEFAULT 0 COMMENT '临时医嘱标识 0-长期医嘱 1-临时医嘱',
+	group_no VARCHAR(50) COMMENT '医嘱组号',
+	inhos_id VARCHAR(50) COMMENT '住院流水号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	inhos_num INTEGER COMMENT '住院次数',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	doctor_id VARCHAR(50) COMMENT '医生工号',
+	doctor_name VARCHAR(50) COMMENT '医生姓名',
+	dept_id VARCHAR(50) COMMENT '科室代码',
+	dept_name VARCHAR(50) COMMENT '科室名称',
+	ward_id VARCHAR(50) COMMENT '病区代码',
+	ward_name VARCHAR(50) COMMENT '病区名称',
+	bed_no VARCHAR(50) COMMENT '床位号',
+	is_drug NUMERIC(1) COMMENT '是否药品医嘱 0-否 1-是',
+	drug_id VARCHAR(50) COMMENT '药品ID',
+	drug_name VARCHAR(200) COMMENT '药品名',
+	spec VARCHAR(20) COMMENT '规格',
+	produce_area VARCHAR(50) COMMENT '产地',
+	dose NUMERIC(10,4) COMMENT '剂量',
+	dose_unit VARCHAR(50) COMMENT '剂量单位',
+	use_dose NUMERIC(10,4) COMMENT '用量',
+	use_dose_unit VARCHAR(50) COMMENT '用量单位',
+	total_dose NUMERIC(10,4) COMMENT '总剂量',
+	total_dose_unit VARCHAR(50) COMMENT '总剂量单位',
+	frequency VARCHAR(50) COMMENT '频次',
+	days INTEGER COMMENT '天数',
+	give_way VARCHAR(50) COMMENT '给药途径',
+	create_time DATETIME COMMENT '创建时间',
+	begin_time DATETIME COMMENT '开始时间',
+	end_flag NUMERIC(1) COMMENT '是否结束 0-否 1-是',
+	end_time DATETIME COMMENT '结束时间',
+	dr_advice VARCHAR(255) COMMENT '医生嘱托',
+	pt_advice VARCHAR(255) COMMENT '药师嘱托',
+	reason TEXT COMMENT '给药理由',
+	PRIMARY KEY (id)
+)  COMMENT='病人住院医嘱信息'
+;
+
+
+CREATE TABLE pat_allergy_history
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	visit_num INTEGER COMMENT '就诊次数',
+	inhos_num INTEGER COMMENT '入院次数',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	allergy_type VARCHAR(50) COMMENT '过敏类别 drug/food/device',
+	allergy_code VARCHAR(50) COMMENT '过敏物代码',
+	allergy_name VARCHAR(200) COMMENT '过敏物名称',
+	busi_type DECIMAL(1) COMMENT '业务类型 1-门诊 2-住院',
+	create_time DATETIME COMMENT '创建时间',
+	PRIMARY KEY (id)
+)  COMMENT='患者过敏史信息'
+;
+
+
+CREATE TABLE pat_assay_report
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	report_id VARCHAR(50) COMMENT '检验报告流水ID',
+	request_id VARCHAR(50) COMMENT '申请单流水号',
+	visit_id VARCHAR(50) COMMENT '门诊流水号',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	visit_num INTEGER COMMENT '门诊次数',
+	inhos_id VARCHAR(50) COMMENT '住院流水号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	inhos_num INTEGER COMMENT '住院次数',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	doctor_id VARCHAR(50) COMMENT '申请医生工号',
+	doctor_name VARCHAR(50) COMMENT '申请医生姓名',
+	dept_id VARCHAR(50) COMMENT '申请科室代码',
+	dept_name VARCHAR(50) COMMENT '申请科室名称',
+	ward_id VARCHAR(50) COMMENT '申请病区代码',
+	ward_name VARCHAR(50) COMMENT '申请病区名称',
+	bed_no VARCHAR(50) COMMENT '患者床位号',
+	assay_header_id VARCHAR(50) COMMENT '检验项代码',
+	assay_header_name VARCHAR(200) COMMENT '检验项名称',
+	assay_detail_id VARCHAR(50) COMMENT '检验明细项代码',
+	assay_detail_name VARCHAR(50) COMMENT '检验明细项名称',
+	result_value VARCHAR(50) COMMENT '检验结果',
+	result_unit VARCHAR(20) COMMENT '结果单位',
+	result_desc VARCHAR(50) COMMENT '结果描述',
+	normal_flag VARCHAR(10) COMMENT '是否正常 H-偏高 L-偏低 +阳性 -阴性',
+	is_critical DECIMAL(1) DEFAULT 0 COMMENT '是否危急值 0-否 1-是',
+	ref_value VARCHAR(50) COMMENT '参考值',
+	ref_up_limit VARCHAR(50) COMMENT '参考值上限',
+	ref_low_limit VARCHAR(50) COMMENT '参考值下限',
+	create_time DATETIME COMMENT '创建时间',
+	PRIMARY KEY (id)
+)  COMMENT='病人检验报告单'
+;
+
+
+CREATE TABLE pat_assay_request
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	request_id VARCHAR(50) COMMENT '申请单流水号',
+	visit_id VARCHAR(50) COMMENT '门诊流水号',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	visit_num INTEGER COMMENT '门诊次数',
+	inhos_id VARCHAR(50) COMMENT '住院流水号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	inhos_num INTEGER COMMENT '住院次数',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	doctor_id VARCHAR(50) COMMENT '申请医生工号',
+	doctor_name VARCHAR(50) COMMENT '申请医生姓名',
+	dept_id VARCHAR(50) COMMENT '申请科室代码',
+	dept_name VARCHAR(50) COMMENT '申请科室名称',
+	ward_id VARCHAR(50) COMMENT '申请病区代码',
+	ward_name VARCHAR(50) COMMENT '申请病区名称',
+	bed_no VARCHAR(50) COMMENT '患者床位号',
+	assay_header_id VARCHAR(50) COMMENT '检验项代码',
+	assay_header_name VARCHAR(200) COMMENT '检验项名称',
+	assay_detail_id VARCHAR(50) COMMENT '检验细项代码',
+	assay_detail_name VARCHAR(200) COMMENT '检验细项名称',
+	sample_no VARCHAR(50) COMMENT '样本编号',
+	sample_name VARCHAR(200) COMMENT '样本名称',
+	create_time DATETIME COMMENT '创建时间',
+	PRIMARY KEY (id)
+)  COMMENT='病人检验申请单'
+;
+
+
+CREATE TABLE pat_diagnose
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	visit_num INTEGER COMMENT '就诊次数',
+	inhos_num INTEGER COMMENT '入院次数',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	diag_type VARCHAR(50) COMMENT '诊断类别',
+	diag_code VARCHAR(50) COMMENT '诊断代码',
+	diag_name VARCHAR(200) COMMENT '诊断名称',
+	busi_type DECIMAL(1) COMMENT '业务类型 1-门诊 2-住院',
+	create_time DATETIME COMMENT '创建时间',
+	PRIMARY KEY (id)
+)  COMMENT='患者诊断信息'
+;
+
+
+CREATE TABLE pat_examine_report
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	report_id VARCHAR(50) COMMENT '检查报告流水号',
+	request_id VARCHAR(50) COMMENT '申请单流水号',
+	visit_id VARCHAR(50) COMMENT '门诊流水号',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	visit_num INTEGER COMMENT '门诊次数',
+	inhos_id VARCHAR(50) COMMENT '住院流水号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	inhos_num INTEGER COMMENT '住院次数',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	doctor_id VARCHAR(50) COMMENT '申请医生工号',
+	doctor_name VARCHAR(50) COMMENT '申请医生姓名',
+	dept_id VARCHAR(50) COMMENT '申请科室代码',
+	dept_name VARCHAR(50) COMMENT '申请科室名称',
+	ward_id VARCHAR(50) COMMENT '申请病区代码',
+	ward_name VARCHAR(50) COMMENT '申请病区名称',
+	bed_no VARCHAR(50) COMMENT '患者床位号',
+	examine_header_id VARCHAR(50) COMMENT '检验项代码',
+	examine_header_name VARCHAR(200) COMMENT '检查项名称',
+	body_part VARCHAR(50) COMMENT '检查部位',
+	result_desc TEXT COMMENT '检查结果描述',
+	result_diag VARCHAR(200) COMMENT '检查结果诊断',
+	result_qty_value VARCHAR(50) COMMENT '检查结果定量值',
+	result_qty_unit VARCHAR(50) COMMENT '检查结果定量值单位',
+	create_time DATETIME COMMENT '创建时间',
+	is_critical DECIMAL(1) DEFAULT 0 COMMENT '是否危急值 0-否 1-是',
+	PRIMARY KEY (id)
+)  COMMENT='病人检查报告单'
+;
+
+
+CREATE TABLE pat_examine_request
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	request_id VARCHAR(50) COMMENT '申请单流水号',
+	visit_id VARCHAR(50) COMMENT '门诊流水号',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	visit_num INTEGER COMMENT '门诊次数',
+	inhos_id VARCHAR(50) COMMENT '住院流水号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	inhos_num INTEGER COMMENT '住院次数',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	doctor_id VARCHAR(50) COMMENT '申请医生工号',
+	doctor_name VARCHAR(50) COMMENT '申请医生姓名',
+	dept_id VARCHAR(50) COMMENT '申请科室代码',
+	dept_name VARCHAR(50) COMMENT '申请科室名称',
+	ward_id VARCHAR(50) COMMENT '申请病区代码',
+	ward_name VARCHAR(50) COMMENT '申请病区名称',
+	bed_no VARCHAR(50) COMMENT '患者床位号',
+	examine_header_id VARCHAR(50) COMMENT '检验项代码',
+	examine_header_name VARCHAR(200) COMMENT '检查项名称',
+	body_part VARCHAR(50) COMMENT '检查部位',
+	create_time DATETIME COMMENT '创建时间',
+	PRIMARY KEY (id)
+)  COMMENT='病人检查申请单'
+;
+
+
+CREATE TABLE pat_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	visit_num INTEGER COMMENT '就诊次数',
+	inhos_num INTEGER COMMENT '入院次数',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	sex VARCHAR(50) COMMENT '性别 M-男 F-女 O-其他',
+	age VARCHAR(50) COMMENT '年龄',
+	birthday DATETIME COMMENT '出生日期',
+	abo_code VARCHAR(50) COMMENT 'ABO血型代码',
+	abo_name VARCHAR(50) COMMENT 'ABO血型名称',
+	rh_code VARCHAR(50) COMMENT 'RH血型代码',
+	rh_name VARCHAR(50) COMMENT 'RH血型名称',
+	ethnic VARCHAR(50) COMMENT '民族',
+	marriage VARCHAR(50) COMMENT '婚姻状况',
+	phone VARCHAR(50) COMMENT '手机号',
+	medicare_categ_code VARCHAR(50) COMMENT '医疗保险类型代码',
+	medicare_categ_name VARCHAR(50) COMMENT '医疗保险类型名称',
+	create_time DATETIME COMMENT '创建时间',
+	PRIMARY KEY (id)
+)  COMMENT='患者信息'
+;
+
+
+CREATE TABLE pat_inhos_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	inhos_id VARCHAR(50) COMMENT '住院流水号',
+	inhos_no VARCHAR(50) COMMENT '住院号',
+	inhos_num INTEGER COMMENT '住院次数',
+	inhos_time DATETIME COMMENT '住院时间',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	sex VARCHAR(50) COMMENT '性别 M-男 F-女 O-其他',
+	age VARCHAR(50) COMMENT '年龄',
+	birthday DATETIME COMMENT '出生日期',
+	abo_code VARCHAR(50) COMMENT 'ABO血型代码',
+	abo_name VARCHAR(50) COMMENT 'ABO血型名称',
+	rh_code VARCHAR(50) COMMENT 'RH血型代码',
+	rh_name VARCHAR(50) COMMENT 'RH血型名称',
+	marriage VARCHAR(50) COMMENT '婚姻状况',
+	phone VARCHAR(50) COMMENT '手机号',
+	medicare_categ_code VARCHAR(50) COMMENT '医疗保险类型代码',
+	medicare_categ_name VARCHAR(50) COMMENT '医疗保险类型名称',
+	height NUMERIC(5,2) COMMENT '身高（cm）',
+	weight NUMERIC(5,2) COMMENT '体重（kg）',
+	diastolic_pressure INTEGER COMMENT '舒张压（mmHg）',
+	systolic_pressure INTEGER COMMENT '收缩压（mmHg）',
+	blood_pressure VARCHAR(50) COMMENT '血压',
+	pulse_rate INTEGER COMMENT '心率（次/min）',
+	breathing_rate INTEGER COMMENT '呼吸（次/min）',
+	sao2_value INTEGER COMMENT '血氧饱和度（%）',
+	temperature NUMERIC(3,1) COMMENT '体温（℃）',
+	doctor_id VARCHAR(50) COMMENT '医生工号',
+	doctor_name VARCHAR(50) COMMENT '医生姓名',
+	dept_id VARCHAR(50) COMMENT '科室代码',
+	dept_name VARCHAR(50) COMMENT '科室名称',
+	ward_id VARCHAR(50) COMMENT '病区代码',
+	ward_name VARCHAR(50) COMMENT '病区名称',
+	bed_no VARCHAR(50) COMMENT '床位号',
+	main_diag_code VARCHAR(50) COMMENT '入院主诊断编码',
+	main_diag_name VARCHAR(200) COMMENT '入院主诊断名称',
+	comfirm_diag_code VARCHAR(50) COMMENT '确诊诊断代码',
+	comfirm_diag_name VARCHAR(200) COMMENT '确诊诊断名称',
+	discharge_diag_code VARCHAR(50) COMMENT '出院诊断代码',
+	discharge_diag_name VARCHAR(200) COMMENT '出院诊断名称',
+	allergy_History  TEXT COMMENT '过敏史',
+	chief_complaint TEXT COMMENT '主诉',
+	body_examin TEXT COMMENT '查体',
+	examine TEXT COMMENT '辅助检查',
+	disease_history TEXT COMMENT '现病史',
+	illness_history TEXT COMMENT '既往史',
+	family_history TEXT COMMENT '家族史',
+	bad_habit TEXT COMMENT '不良习惯',
+	discharge_flag NUMERIC(1) COMMENT '是否出院 0-否 1-是',
+	discharge_time DATETIME COMMENT '出院时间',
+	is_vip DECIMAL(1) DEFAULT 0 COMMENT '是否是vip，0：否，1：是',
+	is_gravida DECIMAL(1) DEFAULT 0 COMMENT '是否孕妇，0：否，1：是',
+	is_favor DECIMAL(1) COMMENT '是否关注，0：否，1：是',
+	favor_reason TEXT COMMENT '关注原因',
+	PRIMARY KEY (id)
+)  COMMENT='患者住院信息'
+;
+
+CREATE TABLE pat_prescription_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	prescription_id VARCHAR(50) COMMENT '处方流水号',
+	group_no VARCHAR(50) COMMENT '处方组号',
+	visit_id VARCHAR(50) COMMENT '门诊流水号',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	visit_num INTEGER COMMENT '门诊次数',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	doctor_id VARCHAR(50) COMMENT '医生工号',
+	doctor_name VARCHAR(50) COMMENT '医生姓名',
+	dept_id VARCHAR(50) COMMENT '科室代码',
+	dept_name VARCHAR(50) COMMENT '科室名称',
+	drug_id VARCHAR(50) COMMENT '药品ID',
+	drug_name VARCHAR(200) COMMENT '药品名',
+	spec VARCHAR(20) COMMENT '规格',
+	produce_area VARCHAR(50) COMMENT '产地',
+	total_qty NUMERIC(10,4) COMMENT '数量',
+	total_qty_unit VARCHAR(20) COMMENT '数量单位',
+	dose NUMERIC(10,4) COMMENT '单次剂量',
+	dose_unit VARCHAR(20) COMMENT '单次剂量单位',
+	frequency VARCHAR(50) COMMENT '频次',
+	days INTEGER COMMENT '用药天数',
+	give_way VARCHAR(50) COMMENT '给药途径',
+	create_time DATETIME COMMENT '处方时间',
+	PRIMARY KEY (id)
+)  COMMENT='病人门诊处方信息'
+;
+
+
+CREATE TABLE pat_visit_info
+(
+	id INTEGER NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	visit_type VARCHAR(10) COMMENT '就诊类型 10-门诊 20-急诊 99-其他',
+	visit_id VARCHAR(50) COMMENT '就诊流水',
+	visit_num INTEGER COMMENT '就诊次数',
+	visit_time DATETIME COMMENT '就诊时间',
+	outpat_no VARCHAR(50) COMMENT '门诊号',
+	pat_id VARCHAR(50) COMMENT '患者ID',
+	pat_name VARCHAR(50) COMMENT '患者姓名',
+	sex VARCHAR(50) COMMENT '性别 M-男 F-女 O-其他',
+	age VARCHAR(50) COMMENT '年龄',
+	birthday DATETIME COMMENT '出生日期',
+	abo_code VARCHAR(50) COMMENT 'ABO血型代码',
+	abo_name VARCHAR(50) COMMENT 'ABO血型名称',
+	rh_code VARCHAR(50) COMMENT 'RH血型代码',
+	rh_name VARCHAR(50) COMMENT 'RH血型名称',
+	marriage VARCHAR(50) COMMENT '婚姻状况',
+	phone VARCHAR(50) COMMENT '手机号',
+	medicare_categ_code VARCHAR(50) COMMENT '医疗保险类型代码',
+	medicare_categ_name VARCHAR(50) COMMENT '医疗保险类型名称',
+	height NUMERIC(5,2) COMMENT '身高（cm）',
+	weight NUMERIC(5,2) COMMENT '体重（kg）',
+	diastolic_pressure INTEGER COMMENT '舒张压（mmHg）',
+	systolic_pressure INTEGER COMMENT '收缩压（mmHg）',
+	blood_pressure VARCHAR(50) COMMENT '血压',
+	pulse_rate INTEGER COMMENT '心率（次/min）',
+	breathing_rate INTEGER COMMENT '呼吸（次/min）',
+	sao2_value INTEGER COMMENT '血氧饱和度（%）',
+	temperature NUMERIC(3,1) COMMENT '体温（℃）',
+	doctor_id VARCHAR(50) COMMENT '医生工号',
+	doctor_name VARCHAR(50) COMMENT '医生姓名',
+	dept_id VARCHAR(50) COMMENT '科室代码',
+	dept_name VARCHAR(50) COMMENT '科室名称',
+	main_diag_code VARCHAR(50) COMMENT '门诊主诊断编码',
+	main_diag_name VARCHAR(200) COMMENT '门诊主诊断名称',
+	allergy_History  TEXT COMMENT '过敏史',
+	chief_complaint TEXT COMMENT '主诉',
+	body_examin TEXT COMMENT '查体',
+	examine TEXT COMMENT '辅助检查',
+	disease_history TEXT COMMENT '现病史',
+	illness_history TEXT COMMENT '既往史',
+	family_history TEXT COMMENT '家族史',
+	bad_habit TEXT COMMENT '不良习惯',
+	PRIMARY KEY (id)
+)  COMMENT='门诊就诊信息'
+;
