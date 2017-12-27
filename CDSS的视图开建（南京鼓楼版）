@@ -1,0 +1,646 @@
+-- HIS检验子项目信息表
+CREATE VIEW [dbo].[his_assay_detail_info]
+AS
+SELECT distinct 
+    报告项目代码 as detail_id
+	,null as cdss_detail_id
+	,报告项目代码 as detail_code
+	,报告项目名称 as detail_name
+	,申请项目代码 as header_id
+	,null as spell
+	,0 as del_flag
+FROM 申请项目对照检验项目;
+
+--HIS检验项目套餐信息表
+CREATE VIEW [dbo].[his_assay_header_info] 
+AS
+SELECT distinct 
+    申请项目代码 as assay_id
+	,null as cdss_assay_id
+	,申请项目代码 as assay_code
+	,申请项目名称 as assay_name
+	,NULL as assay_type_code
+	,NULL as assay_type_name
+	,NULL as spell
+	,0 as del_flag
+FROM 申请项目对照检验项目;
+
+--HIS科室表
+CREATE VIEW [dbo].[his_dept_info] 
+AS
+SELECT d.dept_code as dept_id
+	,d.dept_code as dept_code
+	,d.dept_name as dept_name
+	,d.dept_name as full_name
+	,null as spell
+	,1 as dept_type
+	,null as parent_id
+	,null as creator
+	,0 as del_flag
+FROM IM_Department d
+WHERE d.disable_Flag = 0
+	AND d.Visit_Admit_Flag = 0;
+
+--HIS疾病信息表	
+CREATE VIEW [dbo].[his_disease_info] 
+AS
+SELECT ICD10_Code as disease_id
+	,NULL as cdss_disease_id
+	,ICD10_Code as disease_code
+	,ICD10_Name as disease_name
+	,ICD10_Type_Code as icd_code
+	,ICD10_Type_Name as icd_name
+	,NULL as spell
+	,0 as del_flag
+FROM IM_ICD10;
+
+--HIS药品字典表
+CREATE VIEW [dbo].[his_drug_info] 
+AS
+SELECT d.Drug_Code as drug_id
+	,null as cdss_drug_id
+	,d.Drug_Code as drug_code
+	,d.Drug_Name as drug_name
+	,null as commodity_name
+	,null as chemical_name
+	,null as spell
+	,d.Drug_Specifications as spec
+	,d.Drug_Unit as unit
+	,d.Drug_Form_Name as dose
+	,d.Drug_Use_One_Dosage_Unit as dose_unit
+	,d.Drug_Factory_Name as produce_area
+	,null as approval_no
+	,d.Antibac_Flag as is_antibacterial
+	,d.Antibac_Level as drug_level
+	,0 as del_flag
+FROM IM_Drug d
+WHERE d.Invalid_Flag = 0 AND d.Drug_Code NOT LIKE '%01';
+
+--HIS检查信息表
+CREATE VIEW [dbo].[his_examine_info] AS SELECT
+	Exam_Item_Code AS examine_id,
+	NULL AS cdss_examine_id,
+	Exam_Item_Code AS examine_code,
+	Exam_Item_Name AS examine_name,
+	NULL AS examine_type_code,
+	NULL AS examine_type_name,
+	NULL AS spell,
+	0 AS del_flag
+FROM
+	IM_Exam_Item;
+
+--HIS病房表
+CREATE VIEW [dbo].[his_ward_info] 
+AS
+SELECT w.ward_code as dept_id
+	,w.ward_code as dept_code
+	,w.ward_name as dept_name
+	,w.ward_name as full_name
+	,py as spell
+	,2 as dept_type
+	,w.Father_Dept_Code as parent_id
+	,null as creator
+	,0 as del_flag
+FROM IM_Ward w
+WHERE w.disable_Flag = 0;
+
+--病人住院医嘱信息
+CREATE VIEW [dbo].[cdss_pat_advice_info]  AS SELECT
+	d.Key_ID as id,
+	d.Key_ID as advice_id,
+	d.Order_Item_Type_Name as advice_type,
+	CASE
+WHEN d.Order_Categ_Name = '长期医嘱' THEN
+	0
+ELSE
+	1
+END as temp_flag,
+ d.Order_Group_No as group_no ,
+ d.Inhosp_No as inhos_id,
+ d.Inhosp_No as inhos_no,
+ d.Inhosp_Num as inhos_num,
+ h.pat_id as pat_id,
+ h.pat_name as pat_name,
+ d.Order_Open_Dr_Code as doctor_id,
+ d.Order_Open_Dr_Name as doctor_name,
+ d.Dept_Code as dept_id,
+ d.Dept_Name as dept_name,
+ d.Ward_Code as ward_id,
+ d.Ward_Name as ward_name,
+ h.bed_no as bed_no,
+ CASE
+WHEN d.Drug_Code IS NOT NULL THEN
+	1
+ELSE
+	0
+END as is_drug,
+ CASE
+WHEN d.Drug_Code IS NOT NULL THEN
+	d.Drug_Code
+ELSE
+	d.Order_Item_Code
+END as drug_id,
+ CASE
+WHEN d.Drug_Code IS NOT NULL THEN
+	d.Drug_Name
+ELSE
+	d.Order_Item_Name
+END as drug_name,
+ d.Drug_Specifications as spec,
+ NULL as produce_area,
+ d.Drug_Use_One_Dosage as dose,
+ d.Drug_Use_One_Dosage_Unit as dose_unit,
+ d.drug_occ as use_dose,
+ d.mini_unit as use_dose_unit,
+ d.Drug_Use_Total_Dosage_Amount as total_dose,
+ d.Drug_Use_Total_Dosage_Unit as total_dose_unit,
+ d.Drug_Use_Frequency_Code as frequency,
+ NULL as days,
+ r.Dose_Way_name as give_way,
+ NULL as reason,
+ d.Order_Begin_Date as begin_time,
+ CASE
+WHEN d.Order_Stop_Date IS NOT NULL THEN
+	1
+ELSE
+	0
+END as end_flag,
+ d.Order_Stop_Date as end_time,
+ d.Order_Date as create_time,
+ d.instruction as dr_advice
+FROM
+	OM_Order_Detail d
+INNER JOIN pat_inhos_info h ON h.inhos_no = d.Inhosp_No
+LEFT JOIN IM_Route_of_Dose r ON r.dose_way_code = d.Dose_Way_Code;
+
+--病人检验报告单
+CREATE VIEW [dbo].[cdss_pat_assay_report] AS SELECT
+	r.Key_ID AS id,
+	r.Test_Report_No AS report_id,
+	r.Test_Requisition_No AS request_id,
+	r.Visit_No AS visit_id,
+	r.Visit_No AS outpat_no,
+	CASE
+WHEN r.Visit_No IS NOT NULL THEN
+	r.Visit_Num
+ELSE
+	0
+END AS visit_num,
+ r.Inhosp_No AS inhos_id,
+ r.Inhosp_No AS inhos_no,
+ CASE
+WHEN r.Inhosp_No IS NOT NULL THEN
+	r.Visit_Num
+ELSE
+	0
+END AS inhos_num,
+ h.pat_id AS pat_id,
+ h.Pat_Name AS pat_name,
+ r.Report_Dr_Code AS doctor_id,
+ r.Report_Dr_Name AS doctor_name,
+ r.Test_Dept_Code AS dept_id,
+ r.Test_Dept_Name AS dept_name,
+ NULL AS ward_id,
+ NULL AS ward_name,
+ h.bed_no AS bed_no,
+ r.Test_Item_Code AS assay_header_id,
+ o.Test_Aim AS assay_header_name,
+ r.Test_Detail_Item_Code AS assay_detail_id,
+ i.test_detail_item_name AS assay_detail_name,
+ CASE
+WHEN r.Test_Result_Value IS NULL THEN
+	r.Test_Result
+ELSE
+	CAST (
+		CAST (
+			r.Test_Result_Value AS DECIMAL (10, 4)
+		) AS VARCHAR (50)
+	)
+END AS result_value,
+ r.Test_Result_Value_Unit AS result_unit,
+ r.Test_Result AS result_desc,
+ r.Normal_Flag AS normal_flag,
+ r.Reference_Value AS ref_value,
+ CAST (
+	r.Normal_Value_Upper_Limit AS DECIMAL (10, 4)
+) AS ref_up_limit,
+ CAST (
+	r.Normal_Value_Lower_Limit AS DECIMAL (10, 4)
+) AS ref_low_limit,
+ r.Report_Date AS create_time,
+ CASE
+WHEN (s.Test_Grave_Value_Result) IS NOT NULL THEN
+	1
+ELSE
+	0
+END AS is_critical
+FROM
+	OR_Test_Report r
+INNER JOIN pat_inhos_info h ON r.Inhosp_No = h.inhos_no
+AND h.inhos_num = r.Visit_Num
+LEFT JOIN OR_Test_Panicvalue s ON r.test_Report_No = s.test_Report_No
+AND r.Visit_Num = s.Visit_Num
+LEFT JOIN OM_test_Order o ON o.Test_Requisition_No = r.Test_Requisition_No
+LEFT JOIN IM_Test_Item i ON i.Test_Detail_Item_Code = r.Test_Detail_Item_Code;
+
+
+-- 病人检验申请单
+CREATE VIEW [dbo].[cdss_pat_assay_request] AS SELECT
+	e.Test_Requisition_No AS request_id,
+	e.visit_no AS visit_id,
+	e.visit_no AS outpat_no,
+	CASE
+WHEN e.Pat_Resource_Code = '门诊' THEN
+	e.visit_num
+ELSE
+	0
+END AS visit_num,
+ e.Inhosp_No AS inhos_id,
+ e.Inhosp_No AS inhos_no,
+ CASE
+WHEN e.Pat_Resource_Code = '住院' THEN
+	e.visit_num
+ELSE
+	0
+END AS inhos_num,
+ h.pat_id AS pat_id,
+ h.pat_name AS pat_name,
+ e.apply_dr_code AS doctor_id,
+ e.apply_dr_name AS doctor_name,
+ e.Apply_Dept_Code AS dept_id,
+ e.Apply_Dept_name AS dept_name,
+ e.curr_ward_code AS ward_id,
+ e.curr_ward_name AS ward_name,
+ h.bed_no AS bed_no,
+ NULL AS assay_header_id --o.Test_Item_Code as assay_header_id
+,
+ e.Test_Item_Code AS assay_header_name,
+ e.Test_Sample_No AS sample_no,
+ e.Sample_Name AS sample_name,
+ e.apply_date AS create_time
+FROM
+	OM_test_Order e
+LEFT JOIN pat_inhos_info h ON e.Inhosp_No = h.inhos_no
+AND h.inhos_num = e.Visit_Num -- LEFT JOIN OR_Test_Report o ON o.Test_Requisition_No = e.Test_Requisition_No
+WHERE
+	e.Inhosp_No IN (
+		SELECT
+			inhos_no
+		FROM
+			pat_inhos_info
+	);
+	
+-- 患者诊断信息	
+CREATE VIEW [dbo].[cdss_pat_diagnose] AS SELECT
+d.Key_ID as id,
+p.pat_id as pat_id,
+d.Visit_No as outpat_no,
+d.Inhosp_No as inhos_no,
+CASE
+WHEN d.Visit_No IS NOT NULL THEN
+	d.Visit_Num
+ELSE
+	0
+END as visit_num,
+ CASE
+WHEN d.Inhosp_No IS NOT NULL THEN
+	d.Visit_Num
+ELSE
+	0
+END as inhos_num,
+ p.pat_name as pat_name,
+ CASE
+WHEN d.Diag_No = 1 THEN
+	'主要诊断'
+ELSE
+	'其他诊断'
+END as diag_type,
+ d.Diag_Code as diag_code,
+ d.Diag_Desc as diag_name,
+ d.Diag_Date as create_time
+FROM
+	PA_Diag_Info d
+INNER JOIN pat_inhos_info p ON p.inhos_no = d.Inhosp_No
+AND d.visit_num = p.inhos_num;
+
+--病人检查报告单
+CREATE VIEW [dbo].[cdss_pat_examine_report] AS SELECT
+	r.Exam_Report_No AS report_id,
+	r.Exam_Requisition_No AS request_id,
+	r.Visit_No AS visit_id,
+	r.Visit_No AS outpat_no,
+	CASE
+WHEN r.Visit_No IS NOT NULL THEN
+	r.Visit_Num
+ELSE
+	0
+END AS visit_num,
+ r.Inhosp_No AS inhos_id,
+ r.Inhosp_No AS inhos_no,
+ CASE
+WHEN r.Inhosp_No IS NOT NULL THEN
+	r.Visit_Num
+ELSE
+	0
+END AS inhos_num,
+ h.pat_id AS pat_id,
+ h.pat_name AS pat_name,
+ r.Report_Dr_Code AS doctor_id,
+ r.Report_Dr_Name AS doctor_name,
+ r.Exam_Dept_Code AS dept_id,
+ r.Exam_Dept_Name AS dept_name,
+ NULL AS ward_id,
+ NULL AS ward_name,
+ h.bed_no AS bed_no,
+ NULL AS examine_header_id
+,
+ r.Exam_Item_Name AS examine_header_name,
+ r.Exam_Part_Name AS body_part,
+ r.Exam_Desc AS result_desc,
+ r.Exam_Result AS result_diag,
+ NULL AS result_qty_value,
+ NULL AS result_qty_unit,
+ r.Report_Date AS create_time,
+ CASE
+WHEN p.Exam_Grave_Value_Result IS NOT NULL THEN
+	1
+ELSE
+	0
+END AS is_critical
+FROM
+	OR_Exam_Report r
+LEFT JOIN pat_inhos_info h ON r.Inhosp_No = h.inhos_no
+AND h.inhos_num = r.Visit_Num
+LEFT JOIN OR_Exam_Panicvalue p ON r.Exam_Report_No = p.Exam_Report_No
+WHERE
+	h.pat_id IS NOT NULL
+AND r.Inhosp_No IN (
+	SELECT
+		inhos_no
+	FROM
+		pat_inhos_info
+);
+
+--病人检查申请单
+CREATE VIEW [dbo].[cdss_pat_examine_request]
+AS
+SELECT e.Exam_Requisition_No as request_id
+	,e.visit_no as visit_id
+	,e.visit_no as outpat_no
+	,CASE 
+		WHEN e.visit_no is not null
+			THEN e.visit_num
+		else 0
+		end as visit_num
+	,e.Inhosp_No as inhos_id
+	,e.Inhosp_No as inhos_no
+	,CASE 
+		WHEN e.Inhosp_No is not null
+			THEN e.visit_num
+		else 0
+		end as inhos_num
+	,h.pat_id as pat_id
+	,h.pat_name as pat_name
+	,e.apply_dr_code as doctor_id
+	,e.apply_dr_name as doctor_name
+	,e.apply_dept_code as dept_id
+	,e.apply_dept_name as dept_name
+	,e.curr_ward_code as ward_id
+	,e.curr_ward_name as ward_name
+	,e.curr_bed_no as bed_no
+	,e.Exam_Item_Code as examine_header_id
+	,r.Exam_Item_Name as examine_header_name
+	,e.Exam_Part_Code as body_part
+	,e.apply_date as create_time
+FROM OM_Exam_Order e
+LEFT JOIN pat_inhos_info h ON e.Inhosp_No = h.inhos_no
+	AND h.inhos_num = e.Visit_Num
+LEFT JOIN OR_Exam_Report r ON r.Exam_Requisition_No = e.Exam_Requisition_No
+WHERE e.Inhosp_No IN (
+		SELECT inhos_no
+		FROM pat_inhos_info
+		);
+
+--患者信息
+CREATE VIEW [dbo].[cdss_pat_info] AS SELECT
+	p.empi_id as pat_id,
+	p.OutHosp_Index_No as outpat_no,
+	p.InHosp_Index_No as inhos_no,
+	p.Visit_Num as visit_num,
+	p.Inhosp_Num as inhos_num,
+	p.Pat_Name as pat_name,
+	p.sex_name as sex ,
+	YEAR (GETDATE()) - YEAR (p.Date_Birth) as age,
+	p.Date_Birth as birthday,
+	p.ABO_Code as abo_code,
+	p.ABO_Name as abo_name,
+	p.Rh_Code as rh_code,
+	p.Rh_Name as rh_name,
+	p.Ethnic_Name as ethnic,
+	p.Marital_Status_Name as marriage,
+	p.Mobile_No as phone,
+	p.Medicare_Categ_Code as medicare_categ_code,
+	p.Medicare_Categ_Name as medicare_categ_name,
+	NULL as create_time
+FROM
+	PA_Patient_Info p
+INNER JOIN PA_Inhospital_Registration par ON p.EMPI_ID = par.EMPI_ID
+where par.Discharge_Date IS NULL;
+
+--患者住院信息
+CREATE VIEW [dbo].[cdss_pat_inhos_info] AS SELECT
+	p.key_id as id,
+	p.Inhosp_No as inhos_id,
+	p.Inhosp_No as inhos_no,
+	p.Inhosp_Num as inhos_num,
+	p.Admit_Date  as inhos_time
+	,
+	p.Visit_Card_No as outpat_no
+	,
+	p.empi_id as pat_id,
+	p.pat_name as pat_name,
+	CASE
+WHEN p.sex_code = 1 THEN
+	'男'
+ELSE
+	'女'
+END as sex,
+ YEAR (GETDATE()) - YEAR (p.date_birth) as age
+,
+ p.date_birth as birthday,
+ NULL  as abo_code 
+,
+ NULL as abo_name 
+,
+ NULL as rh_code
+,
+ NULL as rh_name 
+,
+ m.Marriage_name as marriage,
+ p.Contact_Phone_No as phone,
+ p.Medicare_Categ_Code as medicare_categ_code,
+ c.Medicare_Categ_Name as medicare_categ_name,
+ NULL as height 
+,
+ NULL as  weight 
+,
+ NULL as diastolic_pressure 
+,
+ NULL as systolic_pressure 
+,
+ NULL as blood_pressure 
+,
+ NULL as pulse_rate 
+,
+ NULL as breathing_rate 
+,
+ NULL as sao2_value 
+,
+ NULL as temperature 
+,
+ p.Admit_Dr_Code as doctor_id,
+ p.Admit_Dr_Name as doctor_name 
+,
+ p.Admit_Dept_Code as dept_id,
+ p.Admit_Dept_Name as dept_name,
+ p.Admit_Ward_Code as ward_id,
+ p.Admit_Ward_Name as ward_name,
+ p.Curr_Bed_No as bed_no 
+,
+ p.Admit_Main_Diag_Code as main_diag_code,
+ NULL as  main_diag_name 
+,
+ p.Curr_Diag_Code as comfirm_diag_code,
+ NULL as comfirm_diag_name 
+,
+ p.Discharge_Diag_Code as discharge_diag_code 
+,
+ NULL as discharge_diag_name
+,
+ NULL as allergy_History 
+,
+ NULL as chief_complaint 
+,
+ NULL as body_examin 
+,
+ NULL  as examine
+,
+ NULL as disease_history 
+,
+ NULL as illness_history
+,
+ NULL  as family_history 
+,
+ NULL as bad_habit 
+,
+ CASE
+WHEN p.Discharge_Date IS NULL THEN
+	0
+ELSE
+	1
+END as discharge_flag,
+ p.Discharge_Date as discharge_time,
+ 0 as is_vip,
+ 0 as is_gravida,
+ 0 as is_favor,
+ NULL as favor_reason
+FROM
+	PA_Inhospital_Registration p
+LEFT JOIN IM_Medicare_Category c ON p.Medicare_Categ_Code = c.Medicare_Categ_Code
+LEFT JOIN IM_Marriage m ON p.Marital_Status_Code = m.Marriage_Code
+WHERE
+	
+	DATEDIFF(
+		DAY,
+		p.Discharge_Date,
+		getdate()
+	) <= 7 
+OR p.Discharge_Date IS NULL
+AND p.Admit_Date > DATEADD(YEAR, - 3, GETDATE());
+
+
+--病人门诊处方信息
+CREATE VIEW [dbo].[cdss_pat_prescription_info] 
+AS
+SELECT h.Pres_No as prescription_id
+	,h.Pres_Group_No as group_no
+	,h.Visit_No as visit_id
+	,h.OutHosp_Index_No as outpat_no
+	,h.Visit_Num as visit_num
+	,h.EMPI_ID as pat_id
+	,h.Pat_Name as pat_name
+	,h.Pres_Open_Dr_Code as doctor_id 
+	,h.Pres_Open_Dr_Name as doctor_name
+	,h.Pres_Open_Dept_Code as dept_id
+	,h.Pres_Open_Dept_Name as dept_name
+	,d.Pres_Item_Code as drug_id
+	,d.Pres_Item_Name as drug_name
+	,d.Pres_Item_Specifications as  spec
+	,NULL as produce_area
+	,d.Pres_Item_Amount as total_qty
+	,d.Pres_Item_Unit as total_qty_unit
+	,d.Drug_Use_One_Dosage as dose
+	,d.Drug_Use_One_Dosage_Unit as dose_unit
+	,d.Drug_Use_Frequency_Code as frequency
+	,d.Dose_Days as days 
+	,d.Dose_Way_Code as give_way
+	,d.Pres_Order_Date as create_time
+FROM OM_Prescription_Head h
+LEFT JOIN OM_Prescription_Detail d ON h.Pres_No = d.Pres_No
+WHERE h.Pres_Order_Date > DATEADD(MONTH, - 3, GETDATE());
+
+--门诊就诊信息
+CREATE VIEW [dbo].[cdss_pat_visit_info] AS SELECT
+	v.Visit_No AS visit_id,
+	v.Visit_Num AS visit_num,
+	v.Visit_Date AS visit_time,
+	v.OutHosp_Index_No AS outpat_no,
+	v.EMPI_ID AS pat_id,
+	v.Pat_Name AS pat_name,
+	CASE
+WHEN v.Sex_Code = 1 THEN
+	'男'
+ELSE
+	'女'
+END AS sex,
+ YEAR (GETDATE()) - YEAR (v.Date_Birth) AS age,
+ v.Date_Birth AS birthday,
+ p.abo_code AS abo_code,
+ p.abo_name AS abo_name,
+ p.rh_code AS rh_code,
+ p.rh_name AS rh_name,
+ p.Marital_Status_Name AS marriage,
+ p.Mobile_No AS phone,
+ p.Medicare_Categ_Code AS medicare_categ_code,
+ p.Medicare_Categ_Name AS medicare_categ_name,
+ NULL AS height,
+ NULL AS weight,
+ NULL AS diastolic_pressure,
+ NULL AS systolic_pressure,
+ NULL AS blood_pressure,
+ NULL AS pulse_rate,
+ NULL AS breathing_rate,
+ NULL AS sao2_value,
+ NULL AS temperature,
+ v.Visit_Dr_Code AS doctor_id,
+ v.Visit_Dr_Name AS doctor_name,
+ v.Visit_Dept_Code AS dept_id,
+ v.Visit_Dept_Name AS dept_name,
+ v.Main_Diag_Code AS main_diag_code,
+ v.Main_Diag_Name AS main_diag_name,
+ NULL AS allergy_History,
+ NULL AS chief_complaint,
+ NULL AS body_examin,
+ NULL AS examine,
+ NULL AS disease_history,
+ NULL AS illness_history,
+ NULL AS family_history,
+ NULL AS bad_habit
+FROM
+	PA_Visit_Info v
+FROM
+	PA_Visit_Info v
+LEFT JOIN PA_Patient_Info p ON v.OutHosp_Index_No = p.OutHosp_Index_No
+AND v.Visit_Num = p.Visit_Num
+WHERE
+	v.Visit_Date > DATEADD (MONTH, - 3, GETDATE()) ;
