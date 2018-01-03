@@ -1,0 +1,140 @@
+select 
+f.idenno as EMPI_ID, /*  患者主索引号*/
+f.clinic_code as Visit_No, /*  就诊流水号*/
+'' as Visit_Num, /*  就诊次数*/
+f.clinic_code as OutHosp_Index_No, /*  门诊索引号*/
+f.card_no as Visit_Card_No, /* 就诊卡号*/
+f.name as Pat_Name, /*  患者姓名 */
+f.sex_code as Sex_Code, /* 性别代码*/
+trunc(months_between(c.create_tiem,f.birthday)/12) as Age, /* 年龄*/
+decode(pt.create_tiem,to_date('0001-01-01','yyyy-mm-dd'),null,pt.create_tiem) as Diag_Date, /*   诊断日期*/
+pt.diag_icd10_code as West_Diag_Code, /* 西医诊断代码*/
+'' as Pres_Open_Dept_Index_No, /*处方开立科室索引号*/
+(select o1.dept_code  from emr_sb.org_department o1
+         where o1.id = c.mo_dept_id) as Pres_Open_Dept_Code, /*  处方开立科室代码*/
+(select o1.dept_name
+          from emr_sb.org_department o1
+         where o1.id = c.mo_dept_id) as Pres_Open_Dept_Name, /* 处方开立科室名称*/
+(select oe.empl_code
+          from emr_sb.org_employee oe
+         where oe.id = c.mo_doc_id) as Pres_Open_Dr_Code, /*处方开立医生工号*/
+(select oe.empl_name
+          from emr_sb.org_employee oe
+         where oe.id = c.mo_doc_id) as Pres_Open_Dr_Name, /* 处方开立医生姓名*/		 
+'' as Pres_Proof_Dr_Index_No, /*  处方审核医生索引号*/
+'' as Pres_Proof_Dr_Code, /*  处方审核医生工号*/		 
+'' as Pres_Proof_Dr_Name, /*  处方审核医生姓名*/		 
+'' as Pres_Deploy_Dr_Index_No, /* 处方调配药剂医生索引号*/
+'' as Pres_Deploy_Dr_Code, /*  处方调配药剂医生工号*/
+'' as Pres_Deploy_Dr_Name, /*   处方调配药剂医生姓名*/
+'' as Pres_Audit_Dr_Index_No, /*  处方核对医生索引号*/
+pr.druged_oper as Pres_Audit_Dr_Code, /*  处方核对医生工号*/
+his_sb.fun_get_employeename(pr.druged_oper) as Pres_Audit_Dr_Name, /*处方核对医生姓名*/
+'' as Pres_Dispens_Dr_Index_No, /* 处方发药医生索引号*/
+pr.send_oper as Pres_Dispens_Dr_Code, /*处方发药医生工号*/
+his_sb.fun_get_employeename(pr.send_oper) as Pres_Dispens_Dr_Name, /*处方发药医生姓名*/
+'' as Pres_Execut_Dept_Index_No, /*处方执行科室索引号*/
+(select o1.dept_code
+   from emr_sb.org_department o1
+  where o1.id = c.exec_dept_id) as Pres_Execut_Dept_Code, /*处方执行科室代码*/
+(select o1.dept_name
+          from emr_sb.org_department o1
+         where o1.id = c.exec_dept_id) as Pres_Execut_Dept_Name, /*处方执行科室名称*/
+'' as Pres_Execut_Dr_Index_No, /* 处方执行医生索引号*/
+'' as Pres_Execut_Dr_Code,/*处方执行医生工号*/
+'' as Pres_Execut_Dr_Name, /*  处方执行医生姓名*/
+'' as Pres_Valid_Days, /* 处方有效天数*/
+decode((select max(fof.fee_date)
+          from his_sb.fin_opb_feedetail fof
+         where fof.clinic_code = pt.outpatient_code
+           and fof.recipe_no = c.recipe_no),to_date('0001-01-01','yyyy-mm-dd'),null,(select max(fof.fee_date)
+          from his_sb.fin_opb_feedetail fof
+         where fof.clinic_code = pt.outpatient_code
+           and fof.recipe_no = c.recipe_no))
+            as Charge_Date, /* 收费日期*/
+(select sum(fof.own_cost)
+          from his_sb.fin_opb_feedetail fof
+         where fof.clinic_code = pt.outpatient_code
+           and fof.recipe_no = c.recipe_no) Total_Fee, /*总费用*/
+'' as Send_Out_Pres_Flag, /* 外配处方标志*/		   
+'' as Spec_Pres_Flag, /*特殊处方标志*/
+c.QUIT_FLAG as Pres_Invalid_Flag, /* 处方作废标志*/
+'' as Dr_Entrust, /*医生嘱托*/		   
+'' as Record_Staff_Index_No, /*录入职工索引号*/		   
+(select orge.empl_code
+          from emr_sb.org_employee orge
+         where orge.id = c.mo_doc_id) as Record_Staff_Code, /*录入职工工号*/
+(select orge.empl_name
+          from emr_sb.org_employee orge
+         where orge.id = c.mo_doc_id) as Record_Staff_Name, /*录入职工姓名*/
+decode(c.mo_oper_time,to_date('0001-01-01','yyyy-mm-dd'),null,c.mo_oper_time) as Record_Date,/*录入日期*/  
+'' as MI_Code, /*医疗机构代码*/  	 
+c.id as Order_No，/*医嘱流水号*/
+       c.recipe_no Pres_No, /*处方号*/
+       c.comb_id Pres_Group_No, /* 处方组号*/
+       c.recipe_seq as Pres_Row_No, /*  序号*/
+       c.mo_oper_time as Pres_Order_Date, /*  处方开立日期*/
+       decode(c.term_type, 1, od.former_code, ou.his_code) as Pres_Item_Code, /*处方项目代码*/
+       decode(c.term_type, 1, od.trade_name, ou.name) Pres_Item_Name, /*处方项目名称*/
+       (select ordt.flow_class_code
+          from emr_sb.ordt_term_class ordt
+         where ordt.id = c.term_class_id) Pres_Categ_Code, /*处方类别代码*/
+       (select ordt.name
+          from emr_sb.ordt_term_class ordt
+         where ordt.id = c.term_class_id) as Pres_Categ_Name, /*处方类别名称*/
+       c.term_type as Drug_Pres_Flag, /* 药品处方标志*/
+       decode(c.term_type,
+              1,
+              (select ordt.flow_class_code
+                 from emr_sb.ordt_term_class ordt
+                where ordt.id = c.term_class_id),
+              '') as Drug_Categ_Code, /* 药品类别代码*/
+       decode(c.term_type,
+              1,
+              (select ordt.name
+                 from emr_sb.ordt_term_class ordt
+                where ordt.id = c.term_class_id),
+              '') as Drug_Categ_Name, /* 药品类别名称*/
+       decode(c.term_type, 1, od.dose_model_code, '') as Drug_Form_Code, /* 药品剂型代码*/
+       decode(c.term_type, 1, od.specs, ou.specs) as Pres_Item_Specifications, /* 处方项目规格*/
+       decode(c.term_type,
+              1,
+              (select ph.RETAIL_PRICE
+                 from his_sb.pha_com_baseinfo ph
+                where ph.drug_code = od.former_code),
+              (select fu.UNIT_PRICE
+                 from his_sb.fin_com_undruginfo fu
+                where fu.item_code = ou.his_code)) Pres_Item_Unit_Price, /*  处方项目单价*/    
+       nvl(c.tot_qty, 1) as Pres_Item_Amount, /* 处方项目数量*/
+       c.tot_unit as Pres_Item_Unit, /* 处方项目单位*/
+       null as Pres_Item_Fee, /*处方项目费用*/
+       c.dose_once as Drug_Use_One_Dosage, /*药品使用次剂量*/
+       c.dose_once_unit as Drug_Use_One_Dosage_Unit, /* 药品使用次剂量单位*/
+       c.freq_id as Drug_Use_Frequency_Code, /* 药品使用频次代码*/
+c.freq_name as Drug_Use_Frequency_Name,
+       c.course_span as Dose_Days, /* 用药天数*/
+       c.usage_code as Dose_Way_Code, /*用药途径代码*/
+	   c.usage_name as Dose_Way_Name,/*用药途径名称*/
+       decode(c.discriminator, 'OpmHerb', '1', '') TCM_Pieces_Desc, /*中药饮片处方*/
+       decode(c.discriminator, 'OpmHerb', c.course_span, '') TCM_Pieces_Amount, /*中药饮片剂数（剂）*/
+       '' TCM_Pieces_Decoction_Method, /* 中药饮片煎煮方法*/
+       c.usage_code as TCM_Use_Way, /* 中药用药途径*/
+       '' as Treat_Principle, /*治则治法*/
+       '' as Dose_Desc, /* 用药说明*/
+       c.memo as Note, /*备注*/
+case when c.discriminator ='OpmHerb' then '1' else '0' end as Chinese_Medicine_Flag, /*中药标识*/
+c.charge_Flag as Charge_Flag
+  from emr_sb.ord_opm_order c 
+  left join emr_sb.ordt_drg od
+    on c.term_code = od.id
+  left join emr_sb.ordt_undrug ou
+    on c.term_code = ou.id
+	left join emr_sb.pt_outpatient_cure pt
+    on c.outpatient_id = pt.id
+  left join his_sb.fin_opr_register f
+    on pt.outpatient_code = f.clinic_code
+  left join his_sb.pha_sto_recipe pr
+    on c.recipe_no = pr.recipe_no
+ where nvl(c.quit_flag, '0') <> '1' and  c.mo_oper_time >= to_date('2017-12-01','yyyy-mm-dd')
+ 
+ 
