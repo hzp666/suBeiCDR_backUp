@@ -1,0 +1,4 @@
+DELETE FROM ggs.l_tj_rm 
+WHERE (to_char(to_timestamp(trunc(e_date)), '' yyyy - mm - dd hh24 : mi : ss.ff3 '') 
+      > to_char(to_timestamp(trunc("SYSDATE" - 30)), 
+      '' yyyy - mm - dd hh24 : mi : ss.ff3 ''))
