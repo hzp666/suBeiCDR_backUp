@@ -1,0 +1,35 @@
+SELECT COUNT(1) FROM Main_Pb
+WHERE TO_DATE(opdate,'YYYY/MM/DD') >= SYSDATE -30
+
+SELECT MAX(OPDATE) FROM MAIN_PB
+
+TRUNCATE TABLE Main_Pb
+
+DELETE FROM L_TJ_RM WHERE TO_DATE(E_DATE,'YYYY-MM-DD') >= TO_DATE(SYSDATE-30,'YYYY-MM-DD')
+
+SELECT SYSDATE - 30 FROM DUAL
+
+SELECT TO_DATE(SYSDATE-30,'YYYY-MM-DD') FROM DUAL
+
+SELECT TO_DATE(opdate,'YYYY-MM-DD') FROM Main_Pb
+
+SELECT opdate  FROM Main_Pb
+
+SELECT TO_DATE(opdate,'yyyy/MM/dd')
+FROM MAIN_PB
+
+SELECT opdate FROM Main_Pb
+WHERE TO_DATE(opdate,'YYYY/MM/DD') >= SYSDATE -30
+
+SELECT COUNT(1) FROM Main_Pb
+WHERE opdate >= SYSDATE -30
+
+===================================================================
+
+TRUNCATE TABLE l_tj_rm
+
+SELECT e_date FROM l_tj_rm
+
+SELECT COUNT(1) FROM l_tj_rm
+
+SELECT COUNT(1) FROM l_tj_rm WHERE e_date >= SYSDATE -30
