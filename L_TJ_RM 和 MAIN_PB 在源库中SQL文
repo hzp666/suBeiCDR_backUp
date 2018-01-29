@@ -1,0 +1,40 @@
+
+select COUNT(1) from Main_Pb
+WHERE CAST(opdate AS DATE) < '2015-06-01'
+
+
+select COUNT(1) from Main_Pb
+WHERE CAST(opdate AS DATE) >= '2015-06-01'
+and CAST(opdate AS DATE) < '2016-06-01'
+
+select COUNT(1) from Main_Pb
+WHERE CAST(opdate AS DATE) >= '2016-06-01'
+and CAST(opdate AS DATE) < '2017-06-01'
+
+select COUNT(1) from Main_Pb
+WHERE CAST(opdate AS DATE) >= GETDATE()-30
+
+
+select COUNT(1) from main_pb where convert(date,opdate,120) >GETDATE()-30
+
+SELECT convert(date,opdate,120)  as opdate1
+FROM Main_Pb
+
+select opdate
+from Main_Pb
+
+
+
+=======================================
+
+select COUNT(1) from L_TJ_RM
+WHERE CAST(E_DATE AS DATE) >= GETDATE() -30
+
+
+SELECT convert(date,E_date,102)  as e_date1
+FROM L_TJ_RM
+
+select e_date
+from L_TJ_RM
+
+
