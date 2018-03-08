@@ -1,0 +1,57 @@
+
+
+
+
+=======================ODS 中体检表的 视图sql文 等待 ODS同步============================
+
+
+
+select  
+null  as   Key_ID  ,   --  主键
+  null  as   MI_Code  ,   --  医疗机构代码
+  null  as   MI_Name  ,   --  医疗机构名称
+  null  as   Physical_Exam_No  ,   --  体检流水号
+  a.COMB_SEQID  as   COMB_SEQID  ,   --  组合流水号
+  a.CHECK_ID  as   CHECK_ID  ,   --  体检编码
+  a.PERSON_ID  as   PERSON_ID  ,   --  保健卡号
+  a.TASK_ID  as   TASK_ID  ,   --  单位体检单编码
+  a.COMBINATION_ID  as   COMBINATION_ID  ,   --  组合编码
+  a.COMBINATION_NAME  as   COMBINATION_NAME  ,   --  组合名称
+  null  as   Visit_Card_No  ,   --  就诊卡号
+  null  as   Pat_Name  ,   --  患者姓名
+  null  as   Sex_Code  ,   --  性别代码
+  null  as   Visit_Num  ,   --  就诊/住院次数
+  null  as   Date_Birth  ,   --  出生日期
+  null  as   Occupation_Code  ,   --  职业代码
+  a.SAMPLE_NO  as   SAMPLE_NO  ,   --  样本号
+  null  as   Company_Name  ,   --  工作单位名称
+  null  as   Physical_Exam_Date  ,   --  体检日期
+  null  as   Physical_Exam_Type_Code  ,   --  体检类型代码
+  null  as   Physical_Exam_Package_Code  ,   --  体检套餐代码
+  a.ITEM_ID  as   Physical_Exam_Item_Code  ,   --  体检项目代码
+  a.ITEM_NAME  as   Physical_Exam_Item_Name  ,   --  体检项目名称
+  a.NUM_DOWN  as   NUM_DOWN  ,   --  下限
+  a.NUM_UP  as   NUM_UP  ,   --  上限
+  a.EXEC_DEPT_ID  as   EXEC_DEPT_ID  ,   --  执行科室编码
+  null  as   Physical_Exam_Dr_Index_No  ,   --  体检医生索引号
+  null  as   Physical_Exam_Dr_Code  ,   --  体检医生工号
+a.CHECKDOC  as   Physical_Exam_Dr_Name  ,   --  体检医生姓名
+ a.AUDITINGDOC  as   AUDITINGDOC  ,   --  审核医生
+  a.AUDITING_DATE  as   AUDITING_DATE  ,   --  审核日期
+  RESULT  as   Physical_Exam_Result  ,   --  体检结果
+  a.RANGE_RESULT  as   RANGE_RESULT  ,   --  参考结果
+  a.STANDARD_RESULT  as   STANDARD_RESULT  ,   --  正常结果
+  b.advice  as   VERDICT  ,   --  结论
+  null  as   Paid_Fee  ,   --  应收费用
+  null  as   Receivable_Fee  ,   --  实收费用
+  null  as   Charge_Flag  ,   --  收费标志
+  a.UNIONS  as   UNIONS  ,   --  计量单位
+  null  as   Record_Staff_Index_No  ,   --  录入职工索引号
+  null  as   Record_Staff_Code  ,   --  录入职工工号
+  null  as   Record_Staff_Name  ,   --  录入职工姓名
+  a.DES  as  DES ,  --  备注
+  a.DELETE_FLAG  as   DELETE_FLAG  ,   --  注销标志
+  a.DELETE_DATE  as   DELETE_DATE      --注销日期
+
+FROM hrp.PE_CHECK_ITEM a      
+left join hrp.pe_check_report b on a.check_id = b.check_id
