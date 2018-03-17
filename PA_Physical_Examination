@@ -1,6 +1,53 @@
 
 
+=========================================CDR's create table PA_Physical_Examination==========================================
 
+CREATE TABLE [dbo].[PA_Physical_Examination](
+	[Key_ID] [nvarchar](100) NULL,
+	[MI_Code] [nvarchar](50) NULL,
+	[MI_Name] [nvarchar](100) NULL,
+	[Physical_Exam_No] [nvarchar](max) NULL,
+	[Physical_Exam_ID] [nvarchar](100) NULL,
+	[Health_Card_NO] [nvarchar](100) NULL,
+	[Company_Exam_ID] [nvarchar](100) NULL,
+	[Physical_Exam_Group_Code] [nvarchar](100) NULL,
+	[Physical_Exam_Group_Name] [nvarchar](100) NULL,
+	[Visit_Card_No] [nvarchar](50) NULL,
+	[Pat_Name] [nvarchar](50) NULL,
+	[Sex_Code] [nvarchar](20) NULL,
+	[Visit_Num] [nvarchar](100) NULL,
+	[Date_Birth] [datetime2](3) NULL,
+	[Occupation_Code] [nvarchar](20) NULL,
+	[Specimen_NO] [nvarchar](100) NULL,
+	[Company_Name] [nvarchar](100) NULL,
+	[Physical_Exam_Date] [nvarchar](100) NULL,
+	[Physical_Exam_Type_Code] [nvarchar](20) NULL,
+	[Physical_Exam_Package_Code] [nvarchar](20) NULL,
+	[Physical_Exam_Item_Code] [nvarchar](20) NULL,
+	[Physical_Exam_Item_Name] [nvarchar](100) NULL,
+	[Unit] [nvarchar](100) NULL,
+	[Item_Upper_Limit] [nvarchar](100) NULL,
+	[Item_Lower_Limit] [nvarchar](100) NULL,
+	[Physical_Exam_Dept_Code] [nvarchar](100) NULL,
+	[Physical_Exam_Dr_Index_No] [nvarchar](50) NULL,
+	[Physical_Exam_Dr_Code] [nvarchar](20) NULL,
+	[Physical_Exam_Dr_Name] [nvarchar](50) NULL,
+	[Check_Dr_Code] [nvarchar](100) NULL,
+	[Check_Date] [datetime2](3) NULL,
+	[Physical_Exam_Result] [nvarchar](max) NULL,
+	[Reference_Result] [nvarchar](max) NULL,
+	[Normal_Result] [nvarchar](max) NULL,
+	[Conclusion] [nvarchar](max) NULL,
+	[Paid_Fee] [numeric](12, 2) NULL,
+	[Receivable_Fee] [numeric](12, 2) NULL,
+	[Charge_Flag] [nvarchar](2) NULL,
+	[Record_Staff_Index_No] [nvarchar](50) NULL,
+	[Record_Staff_Code] [nvarchar](20) NULL,
+	[Record_Staff_Name] [nvarchar](50) NULL,
+	[Note] [nvarchar](max) NULL,
+	[Cancel_Status] [nvarchar](2) NULL,
+	[Cancel_Date] [datetime2](3) NULL
+)
 
 =======================ODS 中体检表的 视图sql文 等待 ODS同步============================
 
