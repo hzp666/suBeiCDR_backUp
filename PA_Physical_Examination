@@ -55,3 +55,45 @@ a.CHECKDOC  as   Physical_Exam_Dr_Name  ,   --  体检医生姓名
 
 FROM hrp.PE_CHECK_ITEM a      
 left join hrp.pe_check_report b on a.check_id = b.check_id
+
+
+
+
+===============================体重、身高、收缩压、舒张压的行转列========================================
+
+(
+select
+Physical_Exam_Item_Code,
+
+cast((case when Physical_Exam_Group_Code = '000001' 
+         and Physical_Exam_Item_Code = '000452' 
+then Physical_Exam_Result 
+else null  
+end) as decimal(7)) as COL0201, 						--身高(cm)
+
+cast((case when Physical_Exam_Group_Code = '000001' 
+         and Physical_Exam_Item_Code = '000453' 
+then Physical_Exam_Result 
+else null  
+end) as decimal(7)) as COL0202,						--体重（kg）
+
+cast((case when Physical_Exam_Group_Code = '000001' 
+         and Physical_Exam_Item_Code = '000004' 
+then Physical_Exam_Result 
+else null  
+end) as decimal(7)) as COL0208,     --收缩压(mmHg)
+cast((case when Physical_Exam_Group_Code = '000001' 
+         and Physical_Exam_Item_Code = '000455' 
+then Physical_Exam_Result 
+else null  
+end) as decimal(7))  as  COL0209    --舒张压(mmHg)
+
+from cdr.dbo.PA_Physical_Examination    --患者体检信息
+
+
+group by Physical_Exam_Group_Code,
+Physical_Exam_Item_Code,
+Physical_Exam_Result,
+Physical_Exam_Item_Code
+)
+
