@@ -144,3 +144,35 @@ Physical_Exam_Result,
 Physical_Exam_Item_Code
 )
 
+
+
+===================================================================================
+
+
+select c.*,b.* from
+(select a.Health_Card_NO as IDCARD, 					--居民身份证/健康卡号
+'16'  as CARDTYPE, 						--患者卡证类型
+max(a.Health_Card_NO) as CARDNO, 				--患者卡证号码
+max(Physical_Exam_Date) as EXAMINATION_DATE, --体检日期
+max(CAST(( case when (SUBSTRING(Conclusion,CHARINDEX('健康结果评估：',Conclusion )+7,2) ) 
+	like '%一般%' then 2
+when (SUBSTRING(Conclusion,CHARINDEX('健康结果评估：',Conclusion )+7,2) )  
+	like '%健康%' then 1
+when (SUBSTRING(Conclusion,CHARINDEX('健康结果评估：',Conclusion )+7,2) )  
+	like '%患有%' then 3
+when (SUBSTRING(Conclusion,CHARINDEX('健康结果评估：',Conclusion )+7,2) )  
+	like '%有生%' then 4
+when (SUBSTRING(Conclusion,CHARINDEX('健康结果评估：',Conclusion )+7,2) )  
+	like '%身体%' then 5	
+
+end
+) as int) ) as  COL2202     --健康评价结果代码
+from cdr.dbo.PA_Physical_Examination a
+group by a.Health_Card_NO
+) c,
+
+(select Health_Card_NO,
+max(CAST((case [Physical_Exam_Item_Code] when '000452' then Physical_Exam_Result else null end) as decimal(7))) COL0201, --wight
+max(CAST((case [Physical_Exam_Item_Code] when '000453' then Physical_Exam_Result else null end) as decimal(7))) COL0202 --wight
+from cdr.dbo.PA_Physical_Examination
+group by Health_Card_NO) b where c.IDCARD = b.Health_Card_NO
