@@ -159,12 +159,16 @@ group by Health_Card_NO) b where c.IDCARD = b.Health_Card_NO
 
 =================================shengPingTai's sql for report And deal the Null situation======================================================
 
-alter view PA_Physical_Examination
+
+ALTER view [dbo].[PA_Physical_Examination]
 as
 select c.*,b.* from
 (select a.Health_Card_NO as IDCARD, 					/*居民身份证/健康卡号*/
 '16'  as CARDTYPE, 						/*患者卡证类型*/
-max(a.Health_Card_NO) as CARDNO, 				/*患者卡证号码*/
+max(cast('321000'+a.Physical_Exam_No as nvarchar(50))) as id,/* 主键 */
+'321002468830683' as INPUT_ORGANCODE,/* 体检机构编码 */
+'苏北人民医院' as INPUT_ORGANNAME,/* 体检机构名称 */
+max(a.Health_Card_NO) as CARDNO, /*患者卡证号码*/
 max(Physical_Exam_Date) as EXAMINATION_DATE, /*体检日期*/
 max(CAST(( case when (SUBSTRING(Conclusion,CHARINDEX('健康结果评估：',Conclusion )+7,2) ) 
 	like '%一般%' then 2
