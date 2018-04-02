@@ -1,0 +1,2 @@
+select * from his_sb.fin_com_undruginfo   /* his镜像库中非药品字典表   */
+select * from his_sb.pha_com_baseinfo    /*  his镜像库中药品字典表  */
