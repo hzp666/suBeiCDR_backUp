@@ -1,0 +1,59 @@
+SELECT 
+null as  Key_ID,/*主键*/
+'321002468830683' as  MI_Code,/*医疗机构代码*/
+'nj'||cast(bmi.MainInfoID as nvarchar2(100)) Exam_Report_No,/*检查报告单号*/
+case when rivt.his_apply_no is null then bpi.his_apply_no else rivt.his_apply_no end as Exam_Requisition_No,/*检查申请单号*/
+null as  EMPI_ID,/*患者主索引号*/
+nvl2(bpi.his_inpatient_no,null,bpi.his_clinic_no) as Visit_No,/*就诊流水号*/
+ nvl(bpi.his_card_no,(select hiso.card_no from his_sb.fin_ipr_inmaininfo@dblink_his_mirror hiso
+                      where hiso.inpatient_no = bpi.his_inpatient_no))as Visit_Card_No,
+bpi.his_inpatient_no as Inhosp_No,/*住院流水号*/
+null as  Visit_Num,/*就诊次数/住院次数*/
+bpi.HospitalNum  MR_No,/*病案号*/
+cast(bpi.PatientName as nvarchar2(100)) Pat_Name,/*患者姓名*/
+cast(bpi.PatientSex as nvarchar2(100)) Sex_Name,/*性别名称*/
+bpi.birthday AS Date_Birth,/*出生日期*/
+bci.CheckDate Report_Date,/*报告日期*/
+null as  Report_Dr_Index_No,/*报告医生索引号*/
+null as  Report_Dr_Code,/*报告医生工号*/
+bci.CheckDoctor AS  Report_Dr_Name,/*报告医生姓名*/
+bci.CheckDate AS Exam_Date,/*检查日期*/
+null as  Exam_Equipment_Code,/*检查设备代码*/
+bci.Equipment as  Exam_Equipment_Name,/*检查设备名称*/
+bmi.RecordType as  Exam_Item_Type_Code,/*检查项目类型代码*/
+(select min(ModuleName) from nj.sysModule sm where sm.ModuleCode = bmi.RecordType) as  Exam_Item_Type_Name,/*检查项目类型名称*/
+null as  Exam_Item_Code,/*检查项目代码*/
+case WHEN rivt.checkitem IS NULL then bpi.CheckItem else rivt.checkitem end as  Exam_Item_Name,/*检查项目名称*/
+null as  Exam_Dept_Index_No,/*检查科室索引号*/
+null as  Exam_Dept_Code,/*检查科室代码*/
+null as  Exam_Dept_Name,/*检查科室名称*/
+null as  Exam_Dr_Index_No,/*检查医生索引号*/
+null as  Exam_Dr_Code,/*检查医生工号*/
+bci.CheckDoctor  AS Exam_Dr_Name,/*检查医生姓名*/
+null as  Exam_Part_Code,/*检查部位代码*/
+NULL AS Exam_Part_Name,/*检查部位名称*/
+null as  Exam_Method_Code,/*检查方式代码*/
+null as  Exam_Method_Name,/*检查方式名称*/
+NULL AS  Exam_Report_Status_Code,/*检查报告状态代码*/
+NULL AS Exam_Report_Status_Name,/*检查报告状态名称*/
+bci.CheckSee AS  Exam_Desc,/*检查描述*/
+to_clob(bci.CheckResult) AS  Exam_Result,/*检查结果*/
+nvl(bpi.his_inpatient_no,bpi.his_clinic_no) as Encounter_ID,/*业务流水号*/
+case when bri.PrintCount>0   then 
+NVL2((select smc.ConfigValue from nj.setModuleConfig smc where smc.ModuleCode = bmi.RecordType 
+and smc.ConfigName='PatientFileDir'),'http://192.169.22.5/webreport/WebReportAction.do?eventaction=View3Image'||'&'||'imagepath=ftp://pacs_us:pacs_us@192.168.11.6/nj/'
+||(select smc.ConfigValue from nj.setModuleConfig smc where smc.ModuleCode = bmi.RecordType 
+and smc.ConfigName='PatientFileDir')
+||'/'||to_char(bri.CreateDate,'yyyy-mm') 
+||'/'||SUBSTR(bmi.maininfoid,1,LENGTH(bmi.maininfoid))
+||'/'||SUBSTR(bmi.maininfoid,1,LENGTH(bmi.maininfoid))
+||'.jpg',NULL)
+else null
+end as FTP_URL,
+'nj' as System_Code
+FROM nj.bnsMainInfo bmi
+left  join nj.ReportInfoViewTemp rivt on bmi.MainInfoID=rivt.MainInfoID
+LEFT JOIN nj.bnsPatientInfo bpi ON bmi.MainInfoID = bpi.MainInfoID
+LEFT JOIN nj.bnsCheckInfo bci ON bmi.MainInfoID = bci.MainInfoID
+LEFT JOIN nj.BNSRECORDINFO  bri ON bmi.MainInfoID = bri.MainInfoID
+where bci.CheckDate >= trunc(sysdate,'yyyy')
