@@ -1,0 +1,61 @@
+SELECT
+null as Key_ID,/*主键*/
+'321002468830683' as MI_Code,/*医疗机构代码*/
+a.clinic_code as Visit_No,/*就诊流水号*/
+a.clinic_code as Regist_No,/*挂号流水号*/
+null as EMPI_ID,/*患者主索引号*/
+a.clinic_code as OutHosp_Index_No,/*门诊索引号*/
+a.NAME as Pat_Name,/*患者姓名*/
+decode(a.sex_code,'M','1','F','2',null) as Sex_Code,/*性别代码*/
+a.birthday as Date_Birth,/*出生日期*/
+null as Visit_Num,/*就诊次数*/
+a.card_no as Visit_Card_No,/*就诊卡号*/
+a.PACT_CODE  as Medicare_Categ_Code,/*医疗保险类别代码*/
+a.persontype_id as Pat_Nature_Code,/*患者性质代码*/
+a.SEE_DPCD as Visit_Dept_Index_No,/*就诊科室索引号*/
+a.SEE_DPCD as Visit_Dept_Code,/*就诊科室代码*/
+(SELECT dept_name FROM his_sb.com_department WHERE a.SEE_DPCD = dept_code) as Visit_Dept_Name,/*就诊科室名称*/
+a.SEE_DOCD as Visit_Dr_Index_No,/*就诊医生索引号*/
+a.SEE_DOCD as Visit_Dr_Code,/*就诊医生工号*/
+(SELECT empl_name FROM his_sb.com_employee WHERE a.SEE_DOCD = empl_code) as Visit_Dr_Name,/*就诊医生名称*/
+a.see_date as Visit_Date_Time,/*就诊日期时间*/
+TRUNC(a.see_date) AS Visit_Date,/*就诊日期*/
+a.BEGIN_TIME as In_Visit_Room_Date,/*进诊室日期*/
+a.END_TIME as Out_Visit_Room_Date,/*出诊室日期*/
+b1.diag_icd10_code as Main_Diag_Code,/*主诊断代码*/
+b1.MAIN_DIAGNOSE as Main_Diag_Name,/*主诊断名称*/
+a.PERSONTYPE_NAME as Regist_Categ_Code,/*挂号类别代码*/
+null as Visit_Purpose_Code,/*就诊目的代码*/
+a.TRIAGE_DATE as Triage_Date,/*分诊日期*/
+a.IS_EMERGENCY as Emerg_Flag,/*急诊标志 0非1是*/
+decode(a.pact_code,'0','1','0') as Self_Payment_Flag,/*自费标志 0非1是*/
+null as Pat_Whereabout_Code,/*患者去向代码*/
+b1.is_finish AS Finish_Flag,/*就诊结束标识，2代表结束*/
+a.pay_way as Pay_Way,/*支付方式*/
+a.REGLEVL_CODE as Regist_Level,/*挂号级别代码*/
+case when a.SELFHELP_REGISTER_FLAG = '0' then '0' 
+when a.oper_code = '999889' then '3'
+when a.oper_code = '999888' then '1'
+else '0' end SELFHELP_REGISTER_FLAG,/*自助挂号标记(0=非自助、1=自助机挂号、2=HIS自助挂号、3=掌上预约挂号)      自助只针对于自助挂号机*/
+a.YNREGCHRG as Charge_Flag,/*收费标识 1收费*/
+a.trans_type AS Trans_Type,/*交易类型*/
+cast(CASE WHEN a.dept_name NOT LIKE '%急诊%'
+          AND a.is_emergency <> '1' AND a.ynsee = '1' AND a.ynregchrg = '1'
+          AND exists(select 1 from emr_sb.rcd_out_record_set b,emr_sb.rcd_out_record c,emr_sb.rcdt_input_template_version d,
+									emr_sb.rcdt_input_template e,emr_sb.rcd_out_record_sign f
+					 where a.emr_regid = b.outpatient_id and b.id = c.out_record_set_id and c.record_input_tpl_ver_id = d.id
+							and d.input_template_id = e.id and c.id = f.out_record_id
+							and e.template_type = 1
+							AND e.name LIKE '%复诊%') THEN 1
+  ELSE NULL END AS number(1)) Return_Flag,
+cast(a.YNBOOK as varchar(20)) as Regist_Source_Code,/*0现场挂号/1预约挂号/2特诊挂号*/
+a.pay_cost as In_Pay,/*自付费用*/
+(a.REG_FEE+a.CHCK_FEE+a.DIAG_FEE+a.OTH_FEE ) as Visit_Total_Fee,
+cast(a.DEPT_CODE as varchar(50)) as Regist_Dept_Index_No, 
+cast(a.DEPT_CODE as varchar(20)) as Regist_Dept_Code, 
+cast(a.DEPT_NAME as varchar(50)) as Regist_Dept_Name,
+a.ynsee as See_Flag
+FROM his_sb.FIN_OPR_REGISTER a
+LEFT JOIN emr_sb.pt_outpatient_cure b1 ON a.emr_regid = b1.id
+where a.see_date is not null and a.see_date >= to_date('1900-01-01','yyyy-mm-dd')
+and a.see_date < to_date('2012-01-01','yyyy-mm-dd')
