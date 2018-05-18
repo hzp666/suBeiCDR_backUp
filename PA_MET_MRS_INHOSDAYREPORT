@@ -1,0 +1,48 @@
+select  
+STAT_DATE
+      , DEPT_CODE
+      , NURSE_STATION_CODE
+      , BED_STANDARD
+      , BED_ADD
+      , BED_FREE
+      , BEGIN_PATIENT_NUM
+      , IN_NORMAL
+      , IN_EMERGENCY
+      , IN_RETURN
+      , IN_TRANSFER
+      , OUT_TRANSFER
+      , OUT_NORMAL
+      , OUT_WITHDRAWAL
+      , END_PATIENT_NUM
+      , OUT_CURE
+      , OUT_UNCURE
+      , OUT_BETTER
+      , OUT_DEATH
+      , OUT_OTHER
+      , ACCOMPANY_NUM
+      , DEAD_IN24HOUR
+      , DEAD_OUT24HOUR
+      , OPER_CODE
+      , OPER_DATE
+      , REPORT_STATE
+      , CHECK_EMPL_CODE
+      , CHECK_DATE
+      , REMARK
+      , EXT01
+      , EXT02
+      , EXT03
+      , EXT04
+      , EXT05
+      , EXT06
+      , EXT07
+      , EXT08
+      , EXT09
+      , EXT10
+      , SUBMIT_EMPL_CODE
+      , EXT11
+      , EXT12
+      , EXT13
+      , EXT14
+      , EXT15
+from his_sb.MET_MRS_INHOSDAYREPORT
+where stat_date >= to_date('2017-01-01','yyyy-mm-dd')
