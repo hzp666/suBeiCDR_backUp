@@ -1,0 +1,16 @@
+select cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+cast(code as varchar(100)) as Ward_Index_No,
+cast(code as varchar(100)) as Ward_Code,
+cast(name as varchar(100)) as Ward_Name,
+cast(spell_code as varchar(50)) as Py, 
+cast(wb_code as varchar(50)) as Wb, 
+cast( '' as varchar(50)) as BedCount, 
+cast( '' as varchar(50)) as SeqNo, 
+cast( '' as varchar(50)) as WardFlag, 
+cast( '' as varchar(50)) as Borrow_Flag, 
+cast(case when valid_state='1' then 0 else 1 end as varchar(50)) as Disable_Flag,
+cast( '' as varchar(50)) as Father_Dept_Code, 
+cast( '' as varchar(50)) as Memo
+FROM HIS_SB.COM_DICTIONARY 
+WHERE TYPE = 'NurseSort'
