@@ -1,0 +1,111 @@
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT a.*
+  FROM [CDR].[dbo].[PA_MET_MRS_INHOSDAYREPORT] a
+  where STAT_DATE >= '2018-05-01 00:00:00'
+and STAT_DATE <= '2018-05-01 23:00:00'
+and not exists(select * from cdr.dbo.IM_Ward b where a.NURSE_STATION_CODE = b.WARD_CODE)
+
+--and isnull(NURSE_STATION_CODE , '') = ''
+--and not exists(select * from cdr.dbo.Dim_Dept_Statistics b where a.dept_code = b.Four_Dept_Code)
+--and DEPT_CODE is null
+--and Regist_Dept_Code is null1
+
+--select * from cdr.dbo.IM_Department where DEPT_CODE = '1364'
+
+====================问题5======================
+
+SELECT a.*
+  FROM [CDR].[dbo].RJ_Fact_Dept_Open_Bed a
+  where STAT_DATE >= '2018-05-01 00:00:00'
+and STAT_DATE <= '2018-05-01 23:00:00'
+and not exists(select * from cdr.dbo.Dim_Dept_Statistics b where a.Dept_Code = b.Four_Dept_Code)
+
+
+
+====================问题8====================
+
+SELECT distinct a.INHOS_DEPT_CODE
+  FROM [CDR].[dbo].FM_InHospital_Fee_Detail(nolock) a
+    where CHARGE_DATE >= '2018-05-01 00:00:00'
+and CHARGE_DATE <= '2018-05-01 23:00:00'
+and not exists(select * from cdr.dbo.Dim_Dept_Statistics b where a.INHOS_DEPT_CODE = b.Four_Dept_Code)
+
+
+====================问题9=======================
+
+
+
+SELECT  *
+  FROM [CDR].[dbo].pa_visit_info(nolock) a
+    where Visit_Date >= '2018-05-01 00:00:00'
+and Visit_Date <= '2018-05-01 23:00:00'
+and a.Visit_Dept_Code is null
+
+
+
+select A.SEE_DPCD,A.*
+from his_sb.FIN_OPR_REGISTER a
+where a.see_date >= to_date('2018-05-01 00:00:00'，'yyyy-mm-dd HH24:MI:SS')
+AND a.see_date <= to_date('2018-05-01 23:59:00'，'yyyy-mm-dd HH24:MI:SS')
+AND SEE_DPCD IS NULL
+
+
+======================问题15======================
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT  distinct a.PLACE_DEPT_CODE
+  FROM [BI_SBRMYY_DW].[dbo].[View_Fact_Visit_Fee_Detail] a(nolock)
+  where a.CHARGE_DATE >= '2016-05-01'
+  and a.CHARGE_DATE < '2018-05-02'
+  and not exists (select 1 from BI_SBRMYY_DW.dbo.Dim_Dept_Statistics b where a.PLACE_DEPT_CODE = b.Four_Dept_Code )
+  --and isnull(PLACE_DEPT_CODE,'') = ''
+  
+  
+  
+  
+  =================问题16=================
+  
+  
+  SELECT  distinct a.inhos_dept
+  FROM [BI_SBRMYY_DW].[dbo].View_Fact_Admit_Fee_Detail_Item_KD a(nolock)
+  where a.CHARGE_DATE = '2018-05-01'
+  --and a.CHARGE_DATE < '2018-05-02'
+  and not exists (select 1 from BI_SBRMYY_DW.dbo.Dim_Dept_Statistics b where a.inhos_dept = b.Four_Dept_Code )
+  --and isnull(PLACE_DEPT_CODE,'') = ''
+  
+  
+  =============问题17========================
+  
+  
+  SELECT distinct a.ward_code
+  FROM [BI_SBRMYY_DW].[dbo].View_Fact_Admit_Fee_Detail_Item_KD a
+  where a.CHARGE_DATE = '2018-05-01'
+and not exists(select * from BI_SBRMYY_DW.dbo.dim_nurse_cell b where a.WARD_CODE = b.WARD_CODE)
+
+=============问题18============================
+
+ SELECT distinct c.Ward_Code
+  FROM (SELECT A.COUNTCODE, CAST(A.COUNTDATE AS date) AS COUNTDATE, 
+      B.DETAIL_DEPT_CODE AS CHECKDEPCODE, B.DETAIL_DEPT_CODE AS Ward_Code, 
+      A.MATTYPECODE, A.MATTYPEID, A.HI_VALUE_FLAG, A.ITEMID, A.ITEMNAME, 
+      A.MATCODE, A.MATNAME, A.OUTQUAN, A.PRICE, CAST(A.ACTUALAMOUNT AS FLOAT) 
+      AS ACTUALAMOUNT, A.CHARGEFLAG, A.STOREAGE, A.STORE, 
+      CASE WHEN CHARGEFLAG = '0' AND 
+      MATTYPEID = '13' THEN CAST(ACTUALAMOUNT AS FLOAT) 
+      ELSE 0 END AS NoChargeFee, 
+      CASE WHEN MATTYPEID = '13' THEN CAST(ACTUALAMOUNT AS FLOAT) 
+      ELSE 0 END AS HCFee, CASE WHEN MATTYPEID IN ('12', '13', '16') 
+      THEN (CASE WHEN b.DETAIL_DEPT_CODE IN ('1053', '1327', '2054') AND 
+      a.HI_VALUE_FLAG = '1' THEN 0 ELSE CAST(ACTUALAMOUNT AS FLOAT) END) 
+      ELSE 0 END AS YJFee
+FROM BI_SBRMYY_DW.dbo.Fact_HC_Outbound_Detail AS A INNER JOIN
+      BI_SBRMYY_DW.dbo.Dim_Dept AS B ON A.CHECKDEPCODE = B.DEPT_ENAME) c
+  where c.COUNTDATE = '2018-05-01'
+and not exists(select * from BI_SBRMYY_DW.dbo.dim_nurse_cell b where c.Ward_Code = b.WARD_CODE)
+
+
+===============问题19======================
+
+
+  
+  
+  
