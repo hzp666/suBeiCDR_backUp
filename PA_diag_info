@@ -1,0 +1,49 @@
+select
+null  as  Key_ID  ,   /*  主键*/
+null  as  MI_Code  ,   /*  医疗机构代码*/
+null  as  MI_Name  ,   /*  医疗机构名称*/
+null  as  EMPI_ID  ,   /*  患者主索引号*/
+decode(a.visit_type,'1',(select x.inpatient_code from emr_sb.pt_inpatient_cure x where a.visit_id = x.id),null)  AS Inhosp_No    ,   /*  住院流水号*/
+decode(a.visit_type,'2',(select x.outpatient_code from emr_sb.pt_outpatient_cure x where a.visit_id = x.id),null)  as Visit_No   ,   /*  就诊流水号*/
+decode(a.visit_type,'1',(select x.inpatient_code from emr_sb.pt_inpatient_cure x where a.visit_id = x.id)
+           ,'2',(select x.outpatient_code from emr_sb.pt_outpatient_cure x where a.visit_id = x.id)  
+             ,null)  AS Encounter_ID    ,   /*  住院流水号*/
+decode(a.visit_type,'1',(select y.card_no from emr_sb.pt_inpatient_cure x,his_sb.fin_ipr_inmaininfo y 
+              where a.visit_id = x.id and x.inpatient_code = y.inpatient_no)
+           ,'2',(select y.card_no from emr_sb.pt_outpatient_cure x,his_sb.FIN_OPR_REGISTER y
+              where a.visit_id = x.id and x.outpatient_code = y.clinic_code)
+           ,null) as Visit_Card_No,--就诊卡号
+NULL  as  Visit_Num  ,   /*  就诊/住院次数*/
+c.id  as  Diag_No  ,   /*  诊断序号*/
+null  as  Visit_Dept_Index_No  ,   /*  就诊科室索引号*/
+a.DIAGNOSE_DEPT_ID  as  Visit_Dept_Code  ,   /*  就诊科室代码*/
+a.DIAGNOSE_DEPT_NAME  as  Visit_Dept_Name  ,   /*  就诊科室名称*/
+null  as  Visit_Dr_Index_No  ,   /*  就诊医生索引号*/
+(select f.empl_code 
+from emr_sb.org_employee e , his_sb.com_employee f 
+where  e.empl_code = f.empl_code
+and a.user_id = e.id)  as  Visit_Dr_Code  ,   /*  就诊医生工号*/
+(select f.empl_name  
+from emr_sb.org_employee e ,
+ his_sb.com_employee f 
+where  e.empl_code = f.empl_code
+and a.user_id = e.id)  as  Visit_Dr_Name  ,   /*  就诊医生名称*/
+b.is_main_diagnose  as Main_Flag,/*主诊断标识*/
+a.DIAGNOSE_TYPE_CODE  as  Diag_Categ_Code  ,   /*  诊断类别代码*/
+a.DIAGNOSE_TYPE_NAME  as  Diag_Categ_Name  ,   /*  诊断类别名称*/
+c.DISEASE_ID  as  Diag_Code  ,   /*  诊断代码*/
+c.NAME as  Diag_Name  ,   /*  诊断名称*/
+d.ICD10_CODE  as  Diag_ICD10_Code  ,   /*  诊断ICD10代码*/
+d.name as  Diag_ICD10_Name  ,   /* 诊断ICD10名称 */
+null  as  Diag_Desc  ,   /*  诊断描述*/
+a.CREATE_TIEM  as  Diag_Date  ,   /*  诊断日期*/
+c.name  as  Diag_Result     /*  诊断结果*/
+from 
+      emr_sb.DIAG_CREATION a,  /*开立诊断*/
+      emr_sb.DIAG_DIAGNOSE b, /*诊断*/
+      emr_sb.diag_western_diagnose c, /*西医诊断*/
+      emr_sb.dxt_western_disease d /*西医疾病*/
+ where  a.id = b.diag_creation_id
+       and b.id = c.id
+       and c.disease_id = d.id
+and b.valid_state = '1'
