@@ -1,0 +1,228 @@
+USE [CDR]
+GO
+/****** Object:  StoredProcedure [dbo].[Proc_PA_Inhospital_Registration_Insert]    Script Date: 05/22/2018 16:36:41 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER proc [dbo].[Proc_PA_Inhospital_Registration_Insert](@inpatient_no nvarchar(100))
+as 
+begin
+declare @sql_1 nvarchar(max),@sql_2 nvarchar(max),@sql nvarchar(max)
+set @sql_1 = 
+'insert into PA_Inhospital_Registration(
+MI_Code, 
+Inhosp_No, 
+EMPI_ID, 
+MR_No, 
+Pat_Name, 
+Visit_Card_No, 
+Inhosp_Num, 
+Sex_Code, 
+Date_Birth, 
+ID_Categ_Code, 
+ID_Number, 
+Pat_Nature_Code, 
+Medicare_Categ_Code, 
+Addr_Home, 
+Home_Phone_No, 
+Home_Zip_Code, 
+Company_Name, 
+Company_Phone_No, 
+Addr_Company, 
+Zip_Code_Company, 
+Occupation_Code, 
+Marital_Status_Code, 
+Nation_Code, 
+Ethnic_Code, 
+Native_Code, 
+Contact_Name, 
+Contact_Relation_Name, 
+Contact_Person_Addr, 
+Contact_Phone_No, 
+Inhosp_Purpose_Code, 
+Admit_Date, 
+Admit_Dept_Index_No, 
+Admit_Dept_Code, 
+Admit_Dept_Name, 
+Admit_Ward_Index_No, 
+Admit_Ward_Code, 
+Admit_Ward_Name, 
+Admit_Bed_No, 
+Admit_Way_Code, 
+Admit_Method_Code,
+Admit_Situation_Code, 
+Admit_Main_Diag_Code, 
+Admit_Main_Diag_Name,
+Admit_Dr_Index_No, 
+Admit_Dr_Code, 
+Admit_Dr_Name, 
+Curr_Dept_Index_No, 
+Curr_Dept_Code, 
+Curr_Dept_Name, 
+Curr_Ward_Index_No, 
+Curr_Ward_Code, 
+Curr_Ward_Name, 
+Curr_Bed_No, 
+Curr_Diag_Code, 
+Predischarge_Date, 
+Discharge_Date, 
+Discharge_Dept_Index_No, 
+Discharge_Dept_Code, 
+Discharge_Dept_Name, 
+Discharge_Ward_Index_No, 
+Discharge_Ward_Code, 
+Discharge_Ward_Name, 
+Discharge_Bed_No, 
+Outcome_Code, 
+Discharge_Method_Code, 
+Discharge_Diag_Code, 
+Dr_Group_No, 
+Attend_Dr_Index_No, 
+Attend_Dr_Code, 
+Attend_Dr_Name, 
+Inhosp_Dr_Index_No, 
+Inhosp_Dr_Code, 
+Inhosp_Dr_Name, 
+Chief_Dr_Index_No, 
+Chief_Dr_Code, 
+Chief_Dr_Name, 
+OutHosp_Dr_Index_No, 
+OutHosp_Dr_Code, 
+OutHosp_Dr_Name, 
+Nursing_Level_Code, 
+Nursing_Level_Name, 
+Baby_Flag, 
+Mother_Inhosp_No, 
+Self_Payment_Flag, 
+Record_Date, 
+Record_Staff_Index_No, 
+Record_Staff_Code, 
+Record_Staff_Name, 
+Medical_Team_Code,
+Primary_Nurse_Code,
+Arrange_Date,
+IN_State)'
+set @sql_2 = 'select * from openquery(his,''
+select cast( ''''321002468830683'''' as varchar(50)) as MI_Code, 
+cast(a.INPATIENT_NO as varchar(50)) as Inhosp_No, 
+cast(null as varchar(100)) as EMPI_ID, 
+cast(null as varchar(50)) as MR_No, 
+cast(a.NAME as varchar(50)) as Pat_Name, 
+cast(a.CARD_NO as varchar(50)) as Visit_Card_No, 
+cast(a.IN_TIMES as int) as Inhosp_Num, 
+decode(a.sex_code,''''F'''',''''2'''',''''1'''') as Sex_Code, 
+a.BIRTHDAY as Date_Birth, 
+cast( null as varchar(20)) as ID_Categ_Code, 
+cast(a.IDENNO as varchar(50)) as ID_Number, 
+cast( '''''''' as varchar(20)) as Pat_Nature_Code, 
+cast(a.pact_code as varchar(20)) as Medicare_Categ_Code, 
+cast(a.HOME as varchar(200)) as Addr_Home, 
+cast(a.HOME_TEL as varchar(50)) as Home_Phone_No, 
+cast(a.HOME_ZIP as varchar(50)) as Home_Zip_Code, 
+cast(a.WORK_NAME as varchar(50)) as Company_Name, 
+cast(a.WORK_TEL as varchar(20)) as Company_Phone_No, 
+cast(null as varchar(200)) as Addr_Company, 
+cast(a.WORK_ZIP as varchar(10)) as Zip_Code_Company, 
+cast(a.PROF_CODE as varchar(20)) as Occupation_Code, 
+cast(a.MARI as varchar(20)) as Marital_Status_Code, 
+cast(a.COUN_CODE as varchar(20)) as Nation_Code, 
+cast(a.NATION_CODE as varchar(20)) as Ethnic_Code, 
+cast(a.DIST as varchar(20)) as Native_Code, 
+cast(null as varchar(50)) as Contact_Name, 
+cast(null as varchar(50)) as Contact_Relation_Name, 
+cast(null as varchar(200)) as Contact_Person_Addr, 
+cast(null as varchar(20)) as Contact_Phone_No, 
+cast( '''''''' as varchar(20)) as Inhosp_Purpose_Code, 
+a.in_register_time as Admit_Date, 
+cast(null as varchar(50)) as Admit_Dept_Index_No, 
+cast(b.DEPT_CODE as varchar(20)) as Admit_Dept_Code, 
+(select c.dept_name from his_sb.com_department c where c.dept_code = b.DEPT_CODE) as Admit_Dept_Name, 
+cast( a.NURSE_CELL_CODE as varchar(50)) as Admit_Ward_Index_No, 
+cast( a.NURSE_CELL_CODE as varchar(20)) as Admit_Ward_Code, 
+cast( a.NURSE_CELL_NAME as varchar(50)) as Admit_Ward_Name, 
+cast(a.BED_NO as varchar(50)) as Admit_Bed_No, 
+cast(a.IN_SOURCE as varchar(20)) as Admit_Way_Code, 
+cast(a.IN_AVENUE as varchar(20)) as Admit_Method_Code,
+cast(a.IN_CIRCS as varchar(20)) as Admit_Situation_Code, 
+cast(  
+ 
+ (select d.icd10_code
+from emr_sb.dxt_western_disease d,
+emr_sb.diag_western_diagnose c,
+emr_sb.DIAG_DIAGNOSE x,
+emr_sb.DIAG_CREATION y,
+emr_sb.pt_inpatient_cure e
+where d.id = c.disease_id
+and c.id = x.id
+and x.diag_creation_id = y.id
+and y.visit_id = e.id
+and e.inpatient_code = b.INPATIENT_NO
+and x.valid_state =''''1''''
+and rownum = 1)   as varchar(50)) as Admit_Main_Diag_Code, /* 入院诊断代码  */
+cast(null as varchar(50)) as Admit_Main_Diag_Name, /* 入院诊断名称  */
+cast(a.HOUSE_DOC_CODE as varchar(50)) as Admit_Dr_Index_No, 
+cast(a.HOUSE_DOC_CODE as varchar(20)) as Admit_Dr_Code, 
+cast(a.HOUSE_DOC_NAME as varchar(50)) as Admit_Dr_Name, 
+cast( a.DEPT_CODE as varchar(50)) as Curr_Dept_Index_No, 
+cast( a.DEPT_CODE as varchar(20)) as Curr_Dept_Code, 
+cast( a.DEPT_name as varchar(50)) as Curr_Dept_Name, 
+cast( a.NURSE_CELL_CODE as varchar(50)) as Curr_Ward_Index_No, 
+cast( a.NURSE_CELL_CODE as varchar(20)) as Curr_Ward_Code, 
+cast( a.NURSE_CELL_NAME as varchar(50)) as Curr_Ward_Name, 
+cast( '''''''' as varchar(20)) as Curr_Bed_No, 
+cast( '''''''' as varchar(50)) as Curr_Diag_Code, 
+a.PREPAY_OUTDATE as Predischarge_Date, 
+to_date(a.ext_code,''''yyyy-mm-dd hh24:mi:ss'''') as Discharge_Date, 
+cast(null as varchar(50)) as Discharge_Dept_Index_No, 
+cast(null as varchar(20)) as Discharge_Dept_Code, '
+set @sql = '
+cast(
+(select c.dept_name from  his_sb.com_department c where c.dept_code=b.DEPT_CODE)
+ as varchar(50)) as Discharge_Dept_Name, 
+cast( '''''''' as varchar(50)) as Discharge_Ward_Index_No, 
+cast( '''''''' as varchar(20)) as Discharge_Ward_Code, 
+cast( '''''''' as varchar(50)) as Discharge_Ward_Name, 
+cast( '''''''' as varchar(50)) as Discharge_Bed_No, 
+cast(a.ZG as varchar(20)) as Outcome_Code, 
+cast(null as varchar(20)) as Discharge_Method_Code, 
+cast(null as varchar(50)) as Discharge_Diag_Code, 
+cast(a.MEDICALTEAM_CODE as varchar(20)) as Dr_Group_No, 
+cast(a.CHARGE_DOC_CODE as varchar(50)) as Attend_Dr_Index_No, 
+cast(a.CHARGE_DOC_CODE as varchar(20)) as Attend_Dr_Code, 
+cast(a.CHARGE_DOC_NAME as varchar(50)) as Attend_Dr_Name, 
+cast(a.HOUSE_DOC_CODE as varchar(50)) as Inhosp_Dr_Index_No, 
+cast(a.HOUSE_DOC_CODE as varchar(20)) as Inhosp_Dr_Code, 
+cast(a.HOUSE_DOC_NAME as varchar(50)) as Inhosp_Dr_Name, 
+cast(a.CHIEF_DOC_CODE as varchar(50)) as Chief_Dr_Index_No, 
+cast(a.CHIEF_DOC_CODE as varchar(20)) as Chief_Dr_Code, 
+cast(a.CHIEF_DOC_NAME as varchar(50)) as Chief_Dr_Name, 
+cast( '''''''' as varchar(50)) as OutHosp_Dr_Index_No, 
+cast( '''''''' as varchar(20)) as OutHosp_Dr_Code, 
+cast( '''''''' as varchar(50)) as OutHosp_Dr_Name, 
+cast(null as varchar(20)) as Nursing_Level_Code, 
+cast(a.tend as varchar(20)) as Nursing_Level_Name, 
+cast(a.BABY_FLAG as varchar(2)) as Baby_Flag, 
+cast( '''''''' as varchar(50)) as Mother_Inhosp_No, 
+cast(case when a.PAYKIND_CODE=''''1'''' then ''''1'''' else ''''0'''' end as varchar(2)) as Self_Payment_Flag, 
+a.OPER_DATE as Record_Date, 
+cast(a.OPER_CODE as varchar(50)) as Record_Staff_Index_No, 
+cast(a.OPER_CODE as varchar(20)) as Record_Staff_Code, 
+cast(
+(select c.empl_name from  his_sb.com_employee c where c.empl_code=a.OPER_CODE)
+ as varchar(50)) as Record_Staff_Name, 
+cast(a.MEDICALTEAM_CODE as varchar(50)) as Medical_Team_Code,
+cast(a.duty_nurse_code as varchar(50)) as Primary_Nurse_Code,
+a.IN_ARRANGE_TIME as Arrange_Date,
+a.IN_State as IN_State
+ from his_sb.FIN_IPR_INMAININFO  a
+ left join his_sb.fin_ipr_prepayin  b on a.INPATIENT_NO=b.INPATIENT_NO
+  where a.inpatient_no = '''''
++ ISNULL(@inpatient_no,'')
++''''''')'
+--print @sql_1
+--print @sql_2
+--print @sql
+exec(@sql_1 + @sql_2 + @sql)
+--exec Proc_PA_Inhospital_Registration_Insert 'ZY010000145541'
+end
