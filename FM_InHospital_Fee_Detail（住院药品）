@@ -1,0 +1,66 @@
+select  
+cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+cast( b.card_no as varchar(100)) as EMPI_ID, 
+cast(a.INPATIENT_NO as varchar(50)) as Inhosp_No, 
+cast(b.in_times as int) as Inhosp_Num, 
+cast(a.NAME as varchar(50)) as Pat_Name, 
+cast(a.PACT_CODE as varchar(20)) as Medicare_Categ_Code, 
+cast(a.drug_code as varchar(20)) as Charge_Item_Code, 
+cast(a.fee_CODE as varchar(20)) as Fee_Categ_Code,  
+a.SPECS  as Specifications, 
+cast(a.PACK_QTY as numeric(10,2)) as Pack_Amount, 
+cast(a.QTY as numeric(14,4)) as Amount, 
+cast(a.CURRENT_UNIT as varchar(20)) as Unit, 
+cast(a.UNIT_PRICE as numeric(12,2)) as Unit_Price, 
+cast(a.UNIT_PRICE*a.QTY as numeric(12,2)) as Paid_Fee, 
+cast(a.TOT_COST as numeric(12,2)) as Receivable_Fee, 
+cast(a.RECIPE_DEPTCODE as varchar(50)) as Order_Dept_Index_No, 
+cast(a.RECIPE_DEPTCODE as varchar(20)) as Order_Dept_Code, 
+cast(
+(select c.dept_name from  his_sb.com_department c where c.dept_code=a.RECIPE_DEPTCODE)
+ as varchar(50)) as Order_Dept_Name, 
+cast(a.FEEOPER_DEPTCODE as varchar(50)) as Charge_Dept_Index_No, 
+cast(a.FEEOPER_DEPTCODE as varchar(20)) as Charge_Dept_Code, 
+cast(
+(select c.dept_name from  his_sb.com_department c where c.dept_code=a.FEEOPER_DEPTCODE)
+ as varchar(50)) as Charge_Dept_Name, 
+cast(a.RECIPE_DOCCODE as varchar(50)) as Order_Staff_Index_No, 
+cast(a.RECIPE_DOCCODE as varchar(20)) as Order_Staff_Code, 
+cast(
+(select c.empl_name from  his_sb.com_employee c where c.empl_code=a.RECIPE_DOCCODE)
+ as varchar(50)) as Order_Staff_Name, 
+cast(a.FEE_OPERCODE as varchar(50)) as Charge_Staff_Index_No, 
+cast( a.FEE_OPERCODE as varchar(20)) as Charge_Staff_Code, 
+cast(
+case when a.FEE_OPERCODE in(select empl_code from  his_sb.com_employee)
+then (select c.empl_name from  his_sb.com_employee c where c.empl_code=a.FEE_OPERCODE)
+else a.FEE_OPERCODE end
+ as varchar(50)) as Charge_Staff_Name, 
+cast(a.FEE_DATE as date) as Charge_Date, 
+cast(a.INVOICE_NO as varchar(50)) as Receipt_No, 
+cast(a.LOCAL_EXT_FLAG2 as varchar(2)) as SelfFee_Flag, 
+cast(a.BROUGHT_FLAG as varchar(2)) as Discharge_Take_Drug_Flag, 
+cast(a.CENTER_CODE as varchar(10)) as Accout_Item_Class,
+cast(a.MEDICALTEAM_CODE as varchar(20)) as Medical_Team_Code,
+cast(a.INHOS_DEPTCODE as varchar(20)) as Inhos_Dept_Code,
+cast(null as varchar(20)) as Package_Code,
+cast(c.MAIN_DIAG_CODE as varchar(50)) as Main_Diag_Code,
+cast( b.PERSON_TYPEID as varchar(20)) as Pat_Nature_Code,
+cast('1' as varchar(2)) as Drug_Flag,
+cast(a.EXECUTE_DEPTCODE as varchar(50)) as Exec_Dept_Index_NO,
+cast(a.EXECUTE_DEPTCODE as varchar(20)) as Exec_Dept_Code,
+cast((select c.dept_name from  his_sb.com_department c where c.dept_code=a.EXECUTE_DEPTCODE) as varchar(50)) as Exec_Dept_Name,
+cast(a.NURSE_CELL_CODE as varchar(20)) as Ward_Code,
+cast(case when trans_type = '1' then 0 else 1 end as varchar(2)) as Refund_Flag,
+case when trans_type = '1' then NULL else a.fee_date  end as Refund_Date,
+a.RECIPE_NO as Pres_No,
+a.SEQUENCE_NO as Pres_Row_No,
+a.Trans_Type as Trans_Type,
+a.mo_order as Order_No,
+a.drug_name as Charge_Item_Name
+from   his_sb.vi_fin_ipb_mEDICINELIST a
+ left join  his_sb.FIN_IPR_INMAININFO  b on a.INPATIENT_NO=b.INPATIENT_NO
+ left join his_sb.met_mrs_base c on a.INPATIENT_NO = c.INPATIENT_NO
+where a.fee_date >= to_date('2017-01-01','yyyy-mm-dd')
+and a.fee_date < to_date('2017-07-01','yyyy-mm-dd')
