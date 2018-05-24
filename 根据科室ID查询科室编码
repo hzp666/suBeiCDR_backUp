@@ -1,0 +1,4 @@
+select * from his_sb.com_department
+
+where dept_name = '内科' 
+where dept_ename = '10195' --即科室的唯一id
