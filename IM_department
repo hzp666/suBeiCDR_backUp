@@ -1,0 +1,18 @@
+select  cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+cast(dept_code as varchar(50)) as Dept_Index_No, 
+cast(dept_code as varchar(20)) as Dept_Code, 
+cast(dept_name as varchar(50)) as Dept_Name, 
+cast(dept_ename as varchar(50)) as Dept_Alias, 
+cast( '' as varchar(50)) as Parent_Dept_Index_No, 
+cast( '' as varchar(20)) as Parent_Dept_Code, 
+cast( '' as varchar(50)) as Parent_Dept_Name, 
+cast(dept_type as varchar(20)) as Dept_Type_Code, /*C门诊 I住院 F财务 L后勤(logistics) PI药库 T医技(terminal) O其它 D机关(department)P药房 N护士站*/
+cast( decode(dept_type,'C','门诊','I','住院','F','财务','L','后勤','PI','药库','T','医技','O','其他','D','机关','P','药房','N','护士站','手术室') as varchar(50)) as Dept_Type_Name, 
+cast(spell_code as varchar(50)) as Py, 
+cast(wb_code as varchar(50)) as Wb, 
+cast(case when VALID_STATE='1' then 0 else 1 end as varchar(50)) as Disable_Flag, 
+cast( '' as varchar(10)) as Internal_Sugery_Flag, 
+cast( case when DEPT_TYPE='C' then 0 when DEPT_TYPE='I' then 2 else null end as varchar(10)) as Visit_Admit_Flag
+,cast(case when dept_type = 'C' then '门诊' when DEPT_TYPE = 'I' THEN '住院' else null end as varchar(10)) as Visit_Admit_Name
+from his_sb.com_department
