@@ -1,0 +1,71 @@
+select  cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+cast(SALARY_ID as varchar(50)) as Staff_Index_No, 
+cast(SALARY_ID as varchar(20)) as Staff_Code, 
+cast(empl_name as varchar(50)) as Staff_Name, 
+cast(birthday as date) as Date_Birth, 
+cast(empl_type as varchar(20)) as Staff_Categ_Code, 
+cast( 
+case empl_type when 'C' then '厨师' when 'T' then '技师' when 'P' then '药师' when 'F' then '收款员' when 'N' then '护士'
+ when 'D' then '医生' when 'O' then '其他' else null end
+ as varchar(50)) as Staff_Categ_Name, 
+cast(dept_code as varchar(20)) as Dept_Code, 
+cast( 
+(
+select dept_name from his_sb.com_department where dept_code=a.dept_code
+)
+ as varchar(1000)) as Dept_Name, 
+cast( '' as varchar(20)) as Ward_Code, 
+cast( '' as varchar(1000)) as Ward_Name, 
+cast( '' as varchar(20)) as Default_Dept_Code, 
+cast( '' as varchar(20)) as Default_Ward_Code,
+cast(education_code as varchar(20)) as Degree_Code, 
+cast( 
+(
+select name from his_sb.com_dictionary c where c.type ='EDUCATION' and c.code=a.education_code
+)
+ as varchar(50)) as Degree_Name, 
+cast(POSI_CODE as varchar(20)) as Major_Skill_Post_Code, 
+cast( 
+(
+select name from his_sb.com_dictionary c where c.type ='POSITION' and c.code=a.POSI_CODE
+)
+ as varchar(50)) as Major_Skill_Post_Name, 
+cast(levl_code as varchar(20)) as Title_Level_Code, 
+cast(  
+(
+select name from his_sb.com_dictionary c where c.type ='LEVEL' and c.code=a.levl_code
+)
+ as varchar(50)) as Title_Level_Name, 
+cast(oper_date as date) as Entry_Date, 
+cast(oper_code as varchar(50)) as Data_Maintain_Flag, 
+cast(case when VALID_STATE<>'1' then '1' else '0' end  as varchar(2)) as Disable_Flag, 
+cast( '' as varchar(2)) as Staff_Flag, 
+cast( '' as varchar(2)) as Surgeon_Flag_Name, 
+cast( '' as varchar(2)) as Prescribe_Flag_Name, 
+cast( '' as varchar(2)) as Anes_Flag_Name, 
+cast( '' as varchar(50)) as Antibiotic_Level_Name, 
+cast( '' as varchar(50)) as Oper_Level_Name, 
+cast(is_outJob as varchar(20)) as Staff_Status_Code, 
+cast( case is_outJob when '1' then '退休' else '在职' end
+ as varchar(50)) as Staff_Status_Name, 
+cast( '' as varchar(20)) as Dr_Group_Code, 
+cast( '' as varchar(50)) as Dr_Group_Name, 
+cast(spell_code as varchar(50)) as Py, 
+cast(wb_code as varchar(50)) as Wb, 
+cast(sex_code as varchar(50)) as Sex_Code, 
+cast( '' as varchar(50)) as Marital_Status_Code, 
+cast(idenno as varchar(50)) as ID_Number, 
+cast(tel_no as varchar(50)) as Mobile_No, 
+cast(short_tel_no as varchar(50)) as Inner_Phone, 
+cast(MAILADDRESS as varchar(100)) as Email, 
+cast( '' as varchar(100)) as YBStaff_Code, 
+cast( '' as varchar(100)) as YBDept_Code, 
+cast( '' as varchar(100)) as HRStaff_Code, 
+cast( '' as varchar(100)) as Login_Name, 
+cast( '' as varchar(100)) as Login_Password, 
+cast(remark as varchar(1000)) as Staff_Desc, 
+cast(oper_date as date) as Create_Date, 
+cast(case when  VALID_STATE<>'1'  then OPER_DATE else null end  as date) as Delete_Date, 
+cast(ext_flag as varchar(50)) as Note1
+from his_sb.com_employee a
