@@ -1,6 +1,7 @@
 select  cast( '321002468830683' as varchar(50)) as MI_Code, 
 cast( '苏北人民医院' as varchar(100)) as MI_Name, 
 cast(SALARY_ID as varchar(50)) as Staff_Index_No, 
+cast(EMPL_CODE as varchar(20)) as Staff_Id, 
 cast(SALARY_ID as varchar(20)) as Staff_Code, 
 cast(empl_name as varchar(50)) as Staff_Name, 
 cast(birthday as date) as Date_Birth, 
