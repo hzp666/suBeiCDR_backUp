@@ -1,0 +1,8 @@
+select  cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+a.MEDICAL_TEAM_CODE as Medical_Team_Code,
+a.MEDICAL_TEAM_NAME as Medical_Team_Name,
+CAST(a.dept_code AS VARCHAR(20)) AS Dept_Code,
+CAST(a.dept_name AS VARCHAR(50)) AS Dept_Name, 
+decode(a.VALID_FLAG,'1','0','1') as Disable_Flag
+from his_sb.met_ipm_medicalteam a
