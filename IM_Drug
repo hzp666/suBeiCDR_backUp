@@ -1,0 +1,58 @@
+select  cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+cast(a.drug_code as varchar(20)) as Drug_Code, 
+cast(a.trade_name as varchar(50)) as Drug_Name,
+cast(a.other_name as varchar(50)) as Drug_Alias, 
+cast(a.specs as varchar(50)) as Drug_Specifications, 
+cast(a.MIN_UNIT as varchar(50)) as Drug_Unit, /*包装单位*/
+cast(a.RETAIL_PRICE as numeric(12,2)) as Drug_Unit_Price, 
+cast(a.DRUG_TYPE as varchar(20)) as Drug_Categ_Code, 
+cast( '' as varchar(50)) as Drug_Categ_Name, 
+cast(a.DOSE_MODEL_CODE as varchar(20)) as Drug_Form_Code, 
+cast( '' as varchar(50)) as Drug_Form_Name, 
+cast(a.PRODUCER_CODE as varchar(20)) as Drug_Factory_Code, 
+cast( '' as varchar(100)) as Drug_Factory_Name,
+cast(a.specs as varchar(50)) as Drug_Pack_Specifications, 
+cast(a.pack_qty as numeric(12,2)) as Drug_Pack_Amount, 
+cast(a.pack_unit as varchar(50)) as Drug_Pack_Unit, 
+cast(a.once_dose as numeric(10,4)) as Drug_Use_One_Dosage, 
+cast(a.dose_unit as varchar(50)) as Drug_Use_One_Dosage_Unit, 
+cast(a.frequency_code as varchar(20)) as Drug_Use_Frequency_Code, 
+cast( '' as varchar(50)) as Drug_Use_Frequency_Name, 
+cast(case when a.ATC_NO is not null or ATC_NO<>'' then 1 else 0 end as varchar(2)) as Antibiotic_Flag,
+cast(case when a.item_grade in ('1','2','3') and b.ddd_value is not null then 1 else 0 end as varchar(2)) as Antibac_Flag, 
+case when a.item_grade in ('1','2','3') and b.ddd_value is not null 
+then cast(a.SPECIAL_FLAG3 as varchar(50)) else null end as Antibac_Level, /*特限药品标记   0无限制 1等级限制  2特限药品 对特限药品指定了医生/科室*/
+cast(a.SPECIAL_FLAG as varchar(2)) as Basic_Med_Flag, /*省限制   (1国家基本药物 2省基本药物 0非基本药物)*/
+cast( '' as varchar(2)) as Common_Med_Flag, 
+cast(a.test_flag as varchar(2)) as Provide_Test_Flag, 
+cast(a.PRODUCER_CODE as varchar(200)) as Med_Source, 
+cast( '' as varchar(2)) as Valuable_Med_Flag, 
+cast( b.ddd_value as varchar(20)) as DDD_Value, 
+cast(a.WHOLESALE_PRICE  as numeric(12,2)) as Purchase_Price, 
+cast(a.retail_price as numeric(12,2)) as Retail_Price, 
+cast(case when a.valid_state=1 then null else 1 end as varchar(2)) as Invalid_Flag, 
+cast(a.extend1 as varchar(50)) as Note1, 
+cast(a.extend2 as varchar(50)) as Note2,
+cast(case when a.ATC_NO is not null or ATC_NO<>'' then '抗生素' else '非抗生素' end as varchar(50)) as Antibiotic_Flag_Name,
+cast(case when a.item_grade in ('1','2','3') and b.ddd_value is not null then '抗菌药物' else '非抗菌药物' end as varchar(50)) as Antibac_Flag_Name,
+cast(case when a.item_grade in ('1','2','3') and b.ddd_value is not null then case when a.SPECIAL_FLAG3 = '0'
+      then '非限制'
+      when a.SPECIAL_FLAG3 = '1' then '限制'
+      when a.SPECIAL_FLAG3 = '2' then '特殊限制' 
+      else null end
+else null end as varchar(50)) as Antibac_Level_Name,
+cast(case a.SPECIAL_FLAG
+      when '1' then '国家基本药物'
+      when '2' then '省基本药物'
+      when '0' then '非基本药物'
+      else null end as varchar(50)) as Basic_Med_Flag_Name,
+cast('' as varchar(50)) as Common_Med_Flag_Name,
+b.base_dose as KSS_Base_Dosage,
+b.dose_unit as KSS_Base_Dosage_Unit,
+case when exists(select 1 from his_sb.com_dictionary c where c.code = a.drug_code and c.type = 'TSYP') then 1 else 0 end as Special_Flag,
+case when exists(select 1 from his_sb.com_dictionary c where c.code = a.drug_code and c.type = 'TSYP') then '特殊药物' else '非特殊药物' end as Special_Flag_Name,
+a.drug_quality as Drug_Quality
+,a.REGULAR_SPELL as PY_Code
+from his_sb.pha_com_baseinfo a
+left join his_sb.PHA_COM_ANTIBACTERIA b ON a.atc_no = b.kj_code
