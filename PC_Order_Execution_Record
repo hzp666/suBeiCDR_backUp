@@ -1,0 +1,56 @@
+SELECT 
+ NULL as Key_ID,/*主键*/
+ NULL as MI_Code,/*医疗机构代码*/
+ b.id as Order_Execut_No,/*医嘱执行流水号*/
+ b.bar_code as Order_BarCode, /*医嘱执行条码号*/
+HIS_ORDER_ID as Order_No,/*医嘱号*/
+HIS_GROUP_NO as Order_Group_No,/*医嘱组号*/
+ NULL as EMPI_ID,/*患者主索引号*/
+ a.MRN as Inhosp_No,/*住院流水号*/
+(select card_no from his_sb.fin_ipr_inmaininfo@dblink_his_mirror hisi where hisi.inpatient_no = a.mrn) as Visit_Card_No,
+ NULL as Pat_Name,/*患者姓名*/
+A.SERIES as Inhosp_Num,/*住院次数*/
+ NULL as Dept_Index_No,/*科室索引号*/
+ NULL as Dept_Code,/*科室代码*/
+ NULL as Dept_Name,/*科室名称*/
+ NULL as Ward_Index_No,/*病区索引号*/
+A.WARD_CODE as Ward_Code,/*病区代码*/
+ (SELECT min(c.name) FROM hl.mcs_msys_dept_ward c WHERE c.code = a.ward_code)
+  as Ward_Name,/*病区名称*/
+A.PLAN_TIME as Order_Plan_Begin_Date,/*医嘱计划开始日期*/
+ NULL as Order_Plan_End_Date,/*医嘱计划结束日期*/
+A.START_TIME as Order_Begin_Date,/*医嘱开始日期*/
+A.END_TIME as Order_End_Date,/*医嘱结束日期*/
+A.EXECUTE_TIME as Order_Execut_Begin_Date,/*医嘱执行开始日期*/
+A.FINISH_TIME as Order_Execut_End_Date,/*医嘱执行结束日期*/
+A.ORDER_CLASS as Order_Categ_Code,/*医嘱类别代码*/
+DECODE(a.order_class,'P','西药','PCZ','中成药','PCC','中草药','UZ'
+,'治疗医嘱','UC','检查医嘱','UL','检验医嘱',NULL) AS Order_Categ_Name,/*医嘱类别名称*/
+ NULL as Order_Item_Code,/*医嘱项目代码*/
+A.ORDER_NAME as Order_Item_Name,/*医嘱项目名称*/
+a.is_aux AS IS_Main_Flag,/*主要药品标识*/
+A.SUPPLY_CODE as Dose_Way_Code,/*用药途径代码*/
+a.SUPPLY_name as Dose_Way_Name,/*用药途径名称*/
+A.DOSE as Drug_Use_One_Dosage,/*药品使用次剂量*/
+A.DOSE_UNIT as Drug_Use_One_Dosage_Unit,/*药品使用次剂量单位*/
+A.FREQUENCE as Drug_Use_Frequency_Code,/*药品使用频次代码*/
+A.SPEC as Drug_Specifications,/*药品规格*/
+ NULL as Order_Execut_Frequency_Code,/*医嘱执行频次代码*/
+A.STATUS as Order_Execut_Status_Code,/*医嘱执行状态代码*/
+b.process_type as Execut_Type_Code, /*医嘱操作代码*/
+ NULL as Attend_Dr_Index_No,/*主治医生索引号*/
+null as Attend_Dr_Code,/*主治医生工号*/
+ a.DOCTOR_NAME as Attend_Dr_Name,/*主治医生姓名*/
+ NULL as Execut_Nurse_Index_No,/*执行护士索引号*/
+ (select min(user_code) from hl.mcs_sys_users c where c.id = b.RECORDER_id) as Execut_Nurse_Code,/*执行护士工号*/
+b.RECORDER_NAME as Execut_Nurse_Name,/*执行护士姓名*/
+ (select min(user_code) from hl.mcs_sys_users c where c.id = a.finisher_id) as Finish_Nurse_Code,/*完成护士工号*/
+ null as Finish_Nurse_Index_No,/*完成护士索引号*/
+a.finisher_name as Finish_Nurse_Name,/*完成护士姓名*/
+NULL as Invalid_Flag,/*作废标志*/
+ b.record_time as Record_Date,/*记录日期*/
+ null as Bed_No, /*病人床号*/
+ trim(a.finish_remark) as Note /*备注*/
+FROM hl.mcs_order_schedule a,hl.mcs_order_schedule_process b
+WHERE a.bar_code = b.bar_code
+AND A.PLAN_TIME >= TO_DATE('2018-05-20','YYYY-MM-DD')
