@@ -1,0 +1,58 @@
+USE [hisdata]
+GO
+/****** Object:  Trigger [dbo].[Trg_PA_Physical_Examination_Delete]    Script Date: 2018/6/4 17:02:41 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER  trigger [dbo].[Trg_PA_Physical_Examination_Delete]
+on [dbo].[PE_CHECK_ITEM]
+after Delete
+as
+IF @@ROWCOUNT = 0 RETURN			/*如果Delete条目为0的话，跳出该次触发*/
+ELSE
+BEGIN
+	set nocount on
+	set xact_abort on 
+	begin try
+	begin tran
+		declare @SEQ_ID nvarchar(100),
+				@type nvarchar(100),
+				@begin_date datetime2(3) = getdate(),
+				@trigger_name nvarchar(100) = 'Trg_PA_Physical_Examination_Delete',
+				@trigger_table nvarchar(100) = 'PE_CHECK_ITEM',
+				@target_table nvarchar(100) = 'PA_Physical_Examination',
+				@trigger_type nvarchar(20) = 'Delete',			/*变量赋值与申明会改变@@rowcount的值*/
+				@change_num int
+		select @change_num = count(1) from deleted		/*保存更改的条目到变量中*/
+		if @change_num = 1								/*依据更改条目，判断是否使用游标*/
+		begin
+			select  @SEQ_ID = SEQ_ID,@type = TYPE from deleted
+			exec CDR.[dbo].[Proc_PA_Physical_Examination_Delete] @SEQ_ID
+			exec Trigger_Log.dbo.[Proc_Log_Trigger_Success] @trigger_name,@trigger_table,@trigger_type,@type,@SEQ_ID,@target_table,@begin_date
+		end
+		else
+		begin
+			declare c cursor FAST_FORWARD  for
+				select SEQ_ID,TYPE
+				from deleted
+			OPEN c
+			fetch next from c into @SEQ_ID,@type
+			while @@FETCH_STATUS = 0
+			begin
+				exec CDR.[dbo].[Proc_PA_Physical_Examination_Delete] @SEQ_ID
+				exec Trigger_Log.dbo.[Proc_Log_Trigger_Success] @trigger_name,@trigger_table,@trigger_type,@type,@SEQ_ID,@target_table,@begin_date
+				fetch next from c into @SEQ_ID,@type
+			end
+			close c;
+			deallocate c;
+		end
+	commit tran
+	end try
+	begin catch
+		rollback tran;
+		exec Trigger_Log.dbo.Proc_Log_Trigger_Error @trigger_name,@trigger_table,@trigger_type,@type,@target_table,@SEQ_ID
+	end catch
+	set xact_abort off
+END
