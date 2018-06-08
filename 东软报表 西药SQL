@@ -1,0 +1,10 @@
+select * from (
+select lpad(d.code,4,'0') as code,sum(f.pub_cost+f.pay_cost+f.own_cost) as je
+                           from his_sb.VI_FIN_OPB_FEEDETAIL f,his_sb.com_dictionary d,his_sb.com_employee e
+                           where f.fee_code=d.code and d.type='MINFEE' and f.doct_code=e.empl_code                             
+                                 and f.fee_date>=to_date('2018-05-01 00:00:00','yyyy-MM-dd hh24:mi:ss')
+                                 and f.fee_date<to_date('2018-05-10 23:59:00','yyyy-MM-dd hh24:mi:ss')
+                                 group by code
+
+) b
+where b.code = 1
