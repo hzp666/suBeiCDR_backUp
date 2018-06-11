@@ -1,0 +1,120 @@
+/*--------------------------------- 业 务 流 水 相 关 -----------------------------*/
+--门诊预约主表
+SELECT * FROM his_sb.fin_opr_booking
+--门诊记录主表
+SELECT * FROM his_sb.FIN_OPR_REGISTER WHERE clinic_code = '11846234'
+--电子病历门诊诊断记录（可关联his表门诊流水号）
+SELECT * FROM emr_sb.pt_outpatient_cure
+--门诊治疗记录
+SELECT * FROM emr_sb.pt_outpatient_cure
+--住院预约表
+SELECT in_arrange_time FROM his_sb.FIN_IPR_PREPAYIN
+--住院信息主表
+SELECT * FROM his_sb.FIN_IPR_INMAININFO a 
+WHERE inpatient_no = 'ZY010000515303'
+--电子病历住院诊断记录（可关联his表住院流水号）
+SELECT * FROM emr_sb.pt_inpatient_cure
+--病案首页主表
+SELECT COUNT(1) FROM his_sb.MET_MRS_BASE mmb
+WHERE out_time >= to_date('2017-07-01','yyyy-mm-dd') AND out_time < to_date('2017-08-01','yyyy-mm-dd')
+WHERE main_diag_code2 IS NULL AND main_diag_code IS NOT NULL
+--病案首页手术表
+select * from his_sb.met_MRS_BASE_OPERATION a where a.dept_code is not null
+--病人基本信息表
+SELECT * FROM  his_sb.com_patientinfo WHERE card_no = '0100117610'
+--手术申请表
+SELECT * FROM his_sb.met_ops_apply WHERE pre_date >= TRUNC(SYSDATE)
+--手术记录表
+SELECT * FROM his_sb.met_ops_operationitem mo
+--检验报告打印 --lis_barcode可以与lis的reportform表的serialNo字段对应 --mo_order与医嘱表中的mo_order关联
+select * from his_sb.sblocal_lis_barcode_print
+/*--------------------------------- 字 典 相 关 ----------------------------------------*/
+--his职工字典
+SELECT * FROM his_sb.com_employee WHERE empl_name = '高小坤';
+--emr职工字典与his职工字典对照
+SELECT * FROM his_sb.org_employee 
+--医疗组
+SELECT * FROM his_sb.met_ipm_medicalteam WHERE medical_team_code = '00000183'
+--his科室字典
+SELECT * FROM his_sb.com_department WHERE dept_code = '2053'
+--emr科室字典与his科室字典对照
+SELECT * FROM his_sb.org_department 
+WHERE ID = '5358102'
+--所有字典所在的表
+SELECT * FROM his_sb.com_dictionary WHERE TYPE = 'NurseSort'
+--手术字典表
+SELECT oper_code AS Surgery_Code,OPER_CNNAME AS Surgery_Name FROM emr_sb.sj_operation_code
+WHERE oper_code = '40.1101'
+--非药品收费项目
+SELECT * FROM HIS_SB.FIN_COM_UNDRUGINFO a WHERE a.item_code = '28365'
+--非药品组合项目
+SELECT * FROM his_sb.FIN_COM_UNDRUGZTINFO where item_code = '24493'
+--药品字典表
+select * from his_sb.pha_com_baseinfo a where a.drug_code = '5263'
+--医嘱术语物价对照表
+select * from his_sb.met_com_compare a where a.vaild_flag = '1' and a.order_code = '36672210'
+--emr中药品术语
+select a.former_code,a.* from emr_sb.ordt_drg a where a.trade_name = '烧伤止痛软膏'
+--emr非药品术语
+select a.his_code,a.* from emr_sb.ordt_undrug a where name = '电子胃镜HP（ZH）'
+/*--------------------------------- 处 方 医 嘱 ----------------------------------------*/
+--门诊处方表
+SELECT * FROM emr_sb.ord_opm_order a WHERE a.recipe_no = '26724317'
+--电子病历收费项目与his对照表
+SELECT * FROM his_sb.met_com_compare b
+--his住院非药医嘱执行
+SELECT * FROM his_sb.MET_IPM_EXECUNDRUG
+--住院医嘱档案
+SELECT * FROM his_sb.met_ipm_order WHERE item_type = '1'
+--出院医嘱表
+SELECT * FROM emr_sb.ord_ipm_discharge WHERE out_date >= TRUNC(SYSDATE + 2)
+
+/*--------------------------------- 费 用 相 关 ----------------------------------------*/
+--门诊费用主表
+SELECT * FROM his_sb.fin_opb_feedetail a
+--住院非药费用主表
+SELECT * FROM his_sb.fin_ipb_itemlist a
+--住院药品费用主表
+SELECT * FROM his_sb.fin_ipb_medicinelist a
+/*--------------------------------- 检 查 检 验  ----------------------------------------*/
+--检查检验危机值
+SELECT patient_no AS Inhos_ID,NAME AS Pat_Name,CV_Send_Time,CV_Info,Send_Oper,Send_Dept_Name AS  FROM his_sb.cv_info a 
+WHERE SUGGESTION IS NULL AND a.patient_type = '1' AND CV_SEND_TIME >= TRUNC(SYSDATE - 3)
+/*--------------------------------- 医 嘱 相 关  ----------------------------------------*/
+SELECT * FROM  his_sb.MET_COM_DIAGNOSE  ORDER BY diag_date DESC
+SELECT * FROM emr_sb.diag_diagnose
+/*--------------------------------- 诊 断 相 关  ----------------------------------------*/
+--病人诊断
+SELECT count(1) FROM his_sb.MET_COM_DIAGNOSE WHERE diag_flag <> '0'
+--电子病历诊断开立(包含诊断类型)
+SELECT * FROM emr_sb.diag_creation a ORDER BY diagnose_time DESC
+--诊断流水（包含是否为主诊断，是否有效）
+SELECT * FROM emr_sb.diag_diagnose
+--诊断信息(包含院内的疾病ID和诊断名称)
+SELECT MAX(create_tiem) FROM emr_sb.diag_western_diagnose
+/*--------------------------------- 日 结  ----------------------------------------*/
+--
+SELECT a.open_num,a.now_in_nurse_num,a.open_dayroom_num FROM his_sb.SBLOCAL_BEDINFO_DAYBALANCE a
+WHERE balance_date = to_date('2018-01-07','yyyy-mm-dd')
+--
+SELECT * FROM his_sb.met_mrs_inhosdayreport
+/*--------------------------------- 电 子 病 历  ----------------------------------------*/
+--住院病历签名
+select * from emr_sb.RCD_RECORD_SIGN  --存有签名医师id和病历的id号
+--住院病历集
+ where archive_state <> 'Commit' --
+--住院病历select * from emr_sb.rcd_inpatient_record_set
+select record_child_type,name,a.* from emr_sb.rcd_inpatient_record a where name = '死亡记录' and create_tiem >= to_date('2017-12-01','yyyy-mm-dd')
+group by record_child_type,name
+order by count(1) desc;
+--住院病历数据 与上表通过data_id进行关联
+select * from emr_sb.RCD_RECORD_DATA  where id = 11877535;
+--记录门诊发生的患者病历
+select * from emr_sb.rcd_out_record;
+--门诊病历数据
+select * from emr_sb.rcd_out_record_data;
+/*--------------------------------- 输 血  ----------------------------------------*/
+--输血申请
+select * from his_sb.met_bld_apply
+--血液出库
+select * from his_sb.met_bld_output
