@@ -1,0 +1,73 @@
+医技费用指标  his 中SQL:
+
+select  d.dept_name  科室,sum(人次) 人次,sum(金额) 金额
+                    from(
+                    select /*+ index(t IDX_NEW_FIN_IPB_ITEMLIST14)*/ t.execute_deptcode 科室,
+                            count(distinct t.mo_order) 人次,
+                            sum(t.tot_cost) 金额
+                           
+                    from his_sb.VI_FIN_IPB_ITEMLIST t
+                    where t.package_code is not null
+                    and (t.execute_deptcode = 'ALL' or 'ALL' = 'ALL')
+                    and t.fee_date>=to_date('2018-05-01 00:00:00', 'yyyy-mm-dd hh24:mi:ss')
+                    and t.fee_date<=to_date('2018-05-02 23:59:59', 'yyyy-mm-dd hh24:mi:ss')
+                    group by   t.execute_deptcode
+                    union all
+                    select /*+ index(t IDX_NEW_FIN_IPB_ITEMLIST14)*/ t.execute_deptcode 科室,
+                            t.qty 人次,
+                            t.tot_cost 金额
+                           
+                    from his_sb.VI_FIN_IPB_ITEMLIST t
+                    where t.package_code is null
+                    and (t.execute_deptcode = 'ALL' or 'ALL' = 'ALL')
+                    and t.fee_date>=to_date('2018-05-01 00:00:00', 'yyyy-mm-dd hh24:mi:ss')
+                    and t.fee_date<=to_date('2018-05-02 23:59:59', 'yyyy-mm-dd hh24:mi:ss')
+                    )a,his_sb.com_department d
+                    where d.dept_code= a.科室
+                    --and d.dept_name = '妇科日间'
+                    group by d.dept_name
+                    
+                    
+                    
+                    
+                
+
+
+
+
+==============================================================
+医技费用指标  CDR 中SQL:
+				
+					
+select  d.dept_name as 科室,sum(人次) as  人次,sum(金额) as 金额
+                    from(
+                    select  t.exec_dept_index_no 科室,
+                            count(distinct t.order_no) as 人次,
+                            sum(t.receivable_fee) as 金额
+                           
+                    from FM_InHospital_Fee_Detail(nolock) t
+                    where t.package_code is not null
+                    --and (t.exec_dept_index_no = 'ALL' or 'ALL' = 'ALL')
+                    and t.charge_date>='2018-05-01 00:00:00'
+                    and t.charge_date<='2018-05-02 23:59:59'
+					and t.DRUG_FLAG = '0'	
+                    group by   t.exec_dept_index_no
+                    union all
+                    select /*+ index(t IDX_NEW_FIN_IPB_ITEMLIST14)*/ t.exec_dept_index_no 科室,
+                            t.Amount 人次,
+                            t.receivable_fee 金额
+                           
+                    from FM_InHospital_Fee_Detail(nolock) t
+                    where t.package_code is null
+                    and (t.exec_dept_index_no = 'ALL' or 'ALL' = 'ALL')
+                    and t.charge_date>='2018-05-01 00:00:00'
+                    and t.charge_date<='2018-05-02 23:59:59'
+					--and UNIT is not null					
+					--and Pack_Amount is null		
+					and t.DRUG_FLAG = '0'		
+					
+					
+                    )a,IM_Department d
+                    where d.dept_code= a.科室
+					
+                    group by d.dept_name
