@@ -270,7 +270,11 @@ a.nation_code as NATION_CODE, /*民族代码*/
 a.occupation_code as JOB_CODE, /*职业分类代码*/
 a.marriage as MARR_CODE, /*婚姻状况代码*/
 
-a.PRESENT_COUNTY as CUR_ADDR_CODE, /*现住地区编码*/
+ a.PRESENT_COUNTY as CUR_ADDR_CODE, /*现住地区编码  */
+
+
+
+
 (select  dic.name from his_sb.com_dictionary dic where dic.code = a.present_province and rownum >=1) as CUR_ADDR, /*现住地址（省市）*/
 (select dic.name from his_sb.com_dictionary dic where dic.code = a.present_city and rownum >=1) as CUR_ADDR_1, /*现住地区（地市）*/
 (select  dic.name from his_sb.com_dictionary dic where dic.code = a.present_county and rownum >=1) as CUR_ADDR_2, /*现住地址（区县）*/
