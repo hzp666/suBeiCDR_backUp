@@ -1,0 +1,464 @@
+=======================FirstPageMedicalRecord 抽取包的SQL第一版本 罗康佳写的===================================
+
+
+with cte1 
+as
+(
+select a.inpatient_no,a.diag_code2,a.diag_name2,a.in_condition_flag,a.out_situation
+  ,row_number() over(PARTITION BY a.inpatient_no ORDER BY a.sequence_no) as Rank1
+  from his_sb.met_mrs_base_diagnose a
+  where diag_kind = '2'
+)
+select 
+a.inpatient_no as MED_REC_ID, /*病案唯一ID号*/
+'12321000468830683C' as ORGAN_CODE, /*医疗机构编号*/
+cast('苏北人民医院' as varchar2(20)) as ORGAN_NAME, /*医疗机构名称*/
+a.medical_payment_type as PAY_MODE, /*医疗费用支付方式代码*/
+a.in_times as HP_NUMB, /*住院次数*/
+a.inpatient_no as HP_S_NO, /*住院号*/
+a.record_no as MR_NO, /*病案号*/
+case when c.idenno is null then '99' else '01' end  as CARDTYPE, /*患者就诊卡证类型*/
+case when c.idenno is null then b.card_no else c.idenno end as CARDNO, /*患者就诊卡证号码*/
+null as CER_UNK_REA, /*证件号码不详具体原因*/
+null as OTH_REA_EXP, /*证件号码不详其他原因说明*/
+a.name as NAME, /*病人姓名*/
+a.sex_code as SEX, /*性别代码*/
+a.birthday as BIRTHDAY, /*出生日期*/
+a.age as AGE_YEAR, /*年龄（岁）*/
+trunc(a.age2) as AGE_MONTH, /*月龄（月）*/
+null as AGE_DAY, /*天数（天）*/
+a.country_code as NATION, /*国籍*/
+a.baby_born_weight as B_WEIGHT_1, /*新生儿出生体重（一孩）*/
+null as B_WEIGHT_2, /*新生儿出生体重（二孩）*/
+a.baby_in_weight as IN_HP_WEIGHT, /*新生儿入院体重*/
+a.birth_province as BIRTH_ADDR, /*出生地（省市）*/
+a.birth_city as BIRTH_ADDR_1, /*出生地（地市）*/
+a.birth_county as BIRTH_ADDR_2, /*出生地（区县）*/
+a.native_province as ORYGIN_ADDR, /*籍贯（省市）*/
+a.native_city as ORYGIN_ADDR_1, /*籍贯（地市）*/
+a.nation_code as NATION_CODE, /*民族代码*/
+a.occupation_code as JOB_CODE, /*职业分类代码*/
+a.marriage as MARR_CODE, /*婚姻状况代码*/
+null as CUR_ADDR_CODE, /*现住地区编码*/
+a.present_province as CUR_ADDR, /*现住地址（省市）*/
+a.present_city as CUR_ADDR_1, /*现住地区（地市）*/
+a.present_county as CUR_ADDR_2, /*现住地址（区县）*/
+a.present_other as CUR_ADDR_3, /*现住地址（乡镇、街道）*/
+null as CUR_ADDR_4, /*现住地址（村、居委会）*/
+null as CUR_ADDR_5, /*现住地址（小区门牌号）*/
+a.work_tel as PAT_PHONE, /*电话号码*/
+a.present_postcode as CUR_POSTCODE, /*现住地址邮政编码*/
+a.PERMANENT_POSTCODE as HR_ADDR_CODE, /*户口地区编码*/
+a.PERMANENT_province as HR_ADDR, /*户口地址（省市）*/
+a.PERMANENT_city as HR_ADDR_1, /*户口地址（地市）*/
+a.PERMANENT_COUNTY as HR_ADDR_2, /*户口地址（区县）*/
+a.PERMANENT_other as HR_ADDR_3, /*户口地址（乡镇、街道）*/
+null as HR_ADDR_4, /*户口地址（村、居委会）*/
+null as HR_ADDR_5, /*户口地址（小区门牌号）*/
+a.PERMANENT_POSTCODE as HR_POSTCODE, /*户口地址邮政编码*/
+a.work_address as WORK_ORGAN, /*工作单位*/
+a.work_tel as ORGAN_PHONE, /*单位电话*/
+a.work_postcode as ORGAN_POSTCODE, /*邮政编码*/
+a.contact_name as CON_NAME, /*联系人姓名*/
+a.relationship_code as CON_PAT_CODE, /*与患者关系代码*/
+a.contact_address as CON_ADDR, /*联系人地址*/
+a.contact_tel as CON_PHONE, /*联系人电话*/
+a.in_type as IN_HP_WAY_CODE, /*入院途径代码*/
+a.in_time as IN_HP_DT, /*入院日期时间*/
+a.in_dept_code as IN_DPT_CODE, /*入院科室编码*/
+(select v.dept_name from his_sb.com_department v where rownum = 1 and v.dept_code = a.in_dept_code) as IN_DPT_NAME, /*入院科室名称*/
+a.in_dept_roomnumber as IN_HP_WARD, /*入院病房*/
+a.transfer_dept_code as TRANS_CAT, /*转科科别*/
+/*to_date(b.ext_code,'yyyy-mm-dd hh24:mi:ss') as OUT_HP_DT, /*出院日期时间*/
+a.out_time as OUT_HP_DT, /*出院日期时间*/
+a.out_dept_code as OUT_DPT_CODE, /*出院科室编号*/
+(select v.dept_name from his_sb.com_department v where rownum = 1 and v.dept_code = a.out_dept_code) as OUT_DPT_NAME, /*出院科室名称*/
+a.out_dept_roomnumber as OUT_HP_WARD, /*出院病房*/
+a.in_days as H_O_D, /*住院天数*/
+a.clinic_diag_name2 as OE_DIS_NAME, /*门急诊诊断疾病名称*/
+a.clinic_diag_code2 as OE_DIS_CODE, /*门急诊诊断疾病编码*/
+a.main_diag_code2 as HM_DIS_CODE, /*出院主要诊断疾病编码*/
+a.main_diag_name2 as HM_DIS_NAME, /*出院主要诊断疾病名称*/
+null as M_DIS_CODE, /*出院主要诊断疾病编码*/
+null as M_DIS_NAME, /*出院主要诊断疾病名称*/
+decode(a.MAIN_DIAG_CONDITION,'1','1','2','2','3','3','4') as M_DIS_COND, /*入院病情（对应主要诊断）*/
+decode(a.ext01,'1','1','2','2','3','3','5','4','5') as TRABSFERRED, /*治疗转归（对应主要诊断）*/
+null as M_DIS_DES, /*医生对主要诊断的描述*/
+aaa.diag_code2 as M_DIS_CODE_1, /*出院其他诊断疾病编码①*/
+aaa.diag_name2 as M_DIS_NAME_1, /*出院其他诊断疾病名称①*/
+aaa.in_condition_flag as M_DIS_COND_1, /*入院病情（对应其他诊断①）*/
+aaa.out_situation as TRABSFERRED_1, /*治疗转归（对应其他诊断①）*/
+bbb.diag_code2 as M_DIS_CODE_2, /*出院其他诊断疾病编码②*/
+bbb.diag_name2 as M_DIS_NAME_2, /*出院其他诊断疾病名称②*/
+bbb.in_condition_flag as M_DIS_COND_2, /*入院病情（对应其他诊断②）*/
+bbb.out_situation as TRABSFERRED_2, /*治疗转归（对应其他诊断②）*/
+ccc.diag_code2 as M_DIS_CODE_3, /*出院其他诊断疾病编码③*/
+ccc.diag_name2 as M_DIS_NAME_3, /*出院其他诊断疾病名称③*/
+ccc.in_condition_flag as M_DIS_COND_3, /*入院病情（对应其他诊断③）*/
+ccc.out_situation as TRABSFERRED_3, /*治疗转归（对应其他诊断③）*/
+ddd.diag_code2 as M_DIS_CODE_4, /*出院其他诊断疾病编码④*/
+ddd.diag_name2 as M_DIS_NAME_4, /*出院其他诊断疾病名称④*/
+ddd.in_condition_flag as M_DIS_COND_4, /*入院病情（对应其他诊断④）*/
+ddd.out_situation as TRABSFERRED_4, /*治疗转归（对应其他诊断④）*/
+null as M_DIS_CODE_5, /*出院其他诊断疾病编码⑤*/
+null as M_DIS_NAME_5, /*出院其他诊断疾病名称⑤*/
+null M_DIS_COND_5, /*入院病情（对应其他诊断⑤）*/
+null as TRABSFERRED_5, /*治疗转归（对应其他诊断⑤）*/
+null as M_DIS_CODE_6, /*出院其他诊断疾病编码⑥*/
+null as M_DIS_NAME_6, /*出院其他诊断疾病名称⑥*/
+null as M_DIS_COND_6, /*入院病情（对应其他诊断⑥）*/
+null as TRABSFERRED_6, /*治疗转归（对应其他诊断⑥）*/
+null as M_DIS_CODE_7, /*出院其他诊断疾病编码⑦*/
+null as M_DIS_NAME_7, /*出院其他诊断疾病名称⑦*/
+null as M_DIS_COND_7, /*入院病情（对应其他诊断⑦）*/
+null as TRABSFERRED_7, /*治疗转归（对应其他诊断⑦）*/
+null as M_DIS_CODE_8, /*出院其他诊断疾病编码⑧*/
+null as M_DIS_NAME_8, /*出院其他诊断疾病名称⑧*/
+null as M_DIS_COND_8, /*入院病情（对应其他诊断⑧）*/
+null as TRABSFERRED_8, /*治疗转归（对应其他诊断⑧）*/
+null as M_DIS_CODE_9, /*出院其他诊断疾病编码⑨*/
+null as M_DIS_NAME_9, /*出院其他诊断疾病名称⑨*/
+null as M_DIS_COND_9, /*入院病情（对应其他诊断⑨）*/
+null as TRABSFERRED_9, /*治疗转归（对应其他诊断⑨）*/
+a.INJURY_DIAG_NAME2 as EXTL_CAUSE, /*损伤、中毒的外部原因*/
+a.INJURY_DIAG_CODE2 as EXTL_CAUSE_CODE, /*损伤、中毒的外部原因编码*/
+a.PATHOLOGY_DIAG_NAME as PATHO_DIAG, /*病理诊断*/
+a.PATHOLOGY_DIAG_CODE as PATHO_DIAG_CODE, /*病理诊断编码*/
+a.PATHOLOGY_NUMBER as PATHOEX_NO, /*病理号*/
+a.DRUG_ALLERGY_FLAG as ALLERGY_MARK, /*药物过敏标记*/
+a.ALLERGY_DURG_NAME as ALDRUG_NAME, /*过敏药物名称*/
+a.AUTOPSY_FLAG as AUTOPSY, /*死亡患者尸检*/
+a.BLOOD_TYPE as ABO_CODE, /*ABO血型代码*/
+a.rh as RH_CODE, /*Rh血型代码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.DEPT_DIRECTOR_CODE) as SCHEAD_NAME, /*科主任姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.PROFESSIONAL_DOC_CODE) as CPHY_NAME, /*主任（副主任）医师姓名*/
+(select v.idenno from his_sb.com_employee v where rownum = 1 and v.empl_code = a.ATTENDING_DOC_CODE) as RSPHY_IDCARD, /*主治医师身份证号码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.ATTENDING_DOC_CODE)  as RSPHY_NAME, /*主治医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.INHOS_DOC_CODE) as HPHY_NAME, /*住院医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.DUTY_NURSE_CODE) as PRIMARY_NUR, /*责任护士姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.REFRESHER_DOC_CODE) as RFRPHY_NAME, /*进修医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.INTERN_DOC_CODE) as INTERN_NAME, /*实习医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.CODING_EMPL_CODE) as CODER_NAME, /*编码员姓名*/
+a.RECORD_QUALITY2 as MRQU_CODE, /*病案质量代码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.QC_DOC_CODE) as QUCTRDOC_NAME, /*质控医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.QC_NURSE_CODE) as QUCTRNURSE, /*质控护士姓名*/
+a.QC_DATE as QUCTR_DATE, /*质控日期*/
+case when exists(select 1 from his_sb.met_mrs_base_operation v where v.inpatient_no = a.inpatient_no) then '1' else '0' end as IF_OPREA, /*是否进行手术*/
+(select count(1) from his_sb.met_mrs_base_operation v where v.inpatient_no = a.inpatient_no) as REC_NUMB, /*病案手术记录数*/
+a.OUT_TYPE as DISCHAWAYCODE, /*离院方式代码*/
+a.RECEIVING_HOS_NAME as INTORGAN_NAME, /*拟接收医疗机构名称*/
+a.IN_PLAN_FLAG as IF_31RHP, /*是否有出院31天内再住院计划*/
+a.IN_PLAN_REASON as RHP_P, /*再住院计划目的*/
+null as PAT_IH_FD, /*入院前昏迷天数*/
+null as PAT_IH_FH, /*入院前昏迷小时*/
+null as PAT_IH_FM, /*入院前昏迷分钟*/
+null as PAT_IH_BD, /*入院后昏迷天数*/
+null as PAT_IH_BH, /*入院后昏迷小时*/
+null as PAT_IH_BM, /*入院后昏迷分钟*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no) as TOTAL_COST, /*总费用*/
+(select sum(f.pay_cost+f.own_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no) as IND_PAY, /*自付金额*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010100') as GEN_MED_SF, /*一般医疗服务费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010200') as GEN_CUR_SF, /*一般治疗操作费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010300') as NURSING_FEE, /*护理费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010400') as OTH_TRE_SF, /*其他医疗服务费用*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020100') as PATH_DIAG_FEE, /*病理诊断费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020200') as LAB_DIAG_FEE, /*实验室诊断费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020300') as IMAG_DIAG_FEE, /*影像学诊断费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020400') as CLIN_DIAG_FEE, /*临床诊断项目费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE in('F030100','F030101')) as NON_OP_T_FEE, /*非手术治疗项目费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F030101') as NON_OP_TCP_FEE, /*其中：临床物理治疗费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE in ('F030200','F030201','F030202')) as OP_T_FEE, /*手术治疗费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F030201') as ANES_FEE, /*其中：麻醉费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F030202') as OP_FEE, /*其中：手术费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F040100') as REHAB_FEE, /*康复费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F050200') as CM_TREAT_FEE, /*中医治疗费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE  ='F060100') as W_MED_FEE, /*西药费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F060101') as ANT_COST_FEE, /*其中：抗菌药物费用*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F070100') as C_MED_FEE, /*中成药费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F070200') as CH_MED_FEE, /*中草药费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080100') as BLOOD_FEE, /*血费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080200') as ALBUMIN_FEE, /*白蛋白类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080300') as GLOBULIN_FEE, /*球蛋白类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080400') as COAG_FACT_FEE, /*凝血因子类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080500') as COLL_FACT_FEE, /*细胞因子类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F090100') as CH_USE_DMM_FEE, /*检查用一次性医用材料费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F090200') as TR_USE_DMM_FEE, /*治疗用一次性医用材料费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = b.inpatient_no and f.FEE_TYPE_CODE ='F090300') as OP_USE_DMM_FEE, /*手术用一次性医用材料费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = b.inpatient_no and (f.FEE_TYPE_CODE ='F100100' or f.FEE_TYPE_CODE is null )) as OTHER_FEE, /*其他费用*/
+a.icudept as ICU_CODE_1, /*重症监护室编码①*/
+(select v.dept_name from his_sb.com_department v where v.dept_code = a.icudept) as ICU_NAME_1, /*重症监护室名称①*/
+a.icuin as IN_ICU_DATE_1, /*进入重症监护室日期时间①*/
+a.icuout as OUT_ICU_DATE_1, /*转出重症监护室日期时间①*/
+null as ICU_CODE_2, /*重症监护室编码②*/
+null as ICU_NAME_2, /*重症监护室名称②*/
+null as IN_ICU_DATE_2, /*进入重症监护室日期时间②*/
+null as OUT_ICU_DATE_2, /*转出重症监护室日期时间②*/
+null as ICU_CODE_3, /*重症监护室编码③*/
+null as ICU_NAME_3, /*重症监护室名称③*/
+null as IN_ICU_DATE_3, /*进入重症监护室日期时间③*/
+null as OUT_ICU_DATE_3, /*转出重症监护室日期时间③*/
+null as IF_CRI_CASE, /*是否危重病例*/
+null as IF_DIF_CASE, /*是否疑难病例*/
+null as IF_INF_CASE, /*是否传染病或疑似病例*/
+null as IF_UN_PNEU, /*是否不明原因肺炎病例*/
+null as IF_MDT_CASE, /*是否MDT病历*/
+null as IF_SD_CASE, /*是否单病种病例*/
+null as IF_DO_CASE, /*是否日间手术病例*/
+null as IF_TEACH_MR, /*是否教学查房病历*/
+a.ext02 as OPHPDIAG_CI, /*门诊与出院诊断符合标识*/
+a.ext03 as ADDIAG_CI, /*入院与出院诊断符合标识*/
+a.ext04 as OPERDIAG_CI, /*术前与术后诊断符合标识*/
+a.ext05 as CCASEDIAG_CI, /*临床与病理诊断符合标识*/
+a.EXT06 as RCASEDIAG_CI, /*放射与病理诊断符合标识*/
+a.EXT07 as RSC_NO, /*抢救次数*/
+a.EXT08 as SC_RSC_NO, /*抢救成功次数*/
+a.EXT09 as CPW_MANA_CODE, /*临床路径管理代码*/
+(select v.idenno from his_sb.com_employee v where rownum = 1 and v.empl_code = a.OPER_CODE) as REC_IDCARD, /*记录人身份证号码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.OPER_CODE) as REC_NAME, /*记录人姓名*/
+to_date(b.ext_code,'yyyy-mm-dd hh24:mi:ss') as RCD_DT, /*记录日期时间*/
+nvl(a.FILE_DATE,a.oper_date) as POF_DT /*归档日期时间*/
+from his_sb.met_mrs_base a
+inner join his_sb.fin_ipr_inmaininfo b on a.inpatient_no = b.inpatient_no
+inner join his_sb.com_patientinfo c on b.card_no = c.card_no
+left join cte1 aaa on a.inpatient_no = aaa.inpatient_no and aaa.rank1 = 1
+left join cte1 bbb on a.inpatient_no = bbb.inpatient_no and bbb.rank1 = 2
+left join cte1 ccc on a.inpatient_no = ccc.inpatient_no and ccc.rank1 = 3
+left join cte1 ddd on a.inpatient_no = ddd.inpatient_no and ddd.rank1 = 4
+left join cte1 eee on a.inpatient_no = eee.inpatient_no and eee.rank1 = 5
+where a.RECORD_STATUS = '6' and nvl(b.ext_flag2,'0') <> '1'
+and a.out_time >= to_date('2018-05-01','yyyy-mm-dd')
+and a.out_time < to_date('2018-06-01','yyyy-mm-dd')
+
+==========================FirstPageMedicalRecord.dtsx  第二版本 修改了 住址编号 等===================================
+
+
+with cte1 
+as
+(
+select a.inpatient_no,a.diag_code2,a.diag_name2,a.in_condition_flag,a.out_situation
+  ,row_number() over(PARTITION BY a.inpatient_no ORDER BY a.sequence_no) as Rank1
+  from his_sb.met_mrs_base_diagnose a
+  where diag_kind = '2'
+)
+select 
+a.inpatient_no as MED_REC_ID, /*病案唯一ID号*/
+'12321000468830683C' as ORGAN_CODE, /*医疗机构编号*/
+cast('苏北人民医院' as varchar2(20)) as ORGAN_NAME, /*医疗机构名称*/
+a.medical_payment_type as PAY_MODE, /*医疗费用支付方式代码*/
+a.in_times as HP_NUMB, /*住院次数*/
+a.inpatient_no as HP_S_NO, /*住院号*/
+a.record_no as MR_NO, /*病案号*/
+case when c.idenno is null then '99' else '01' end  as CARDTYPE, /*患者就诊卡证类型*/
+case when c.idenno is null then b.card_no else c.idenno end as CARDNO, /*患者就诊卡证号码*/
+null as CER_UNK_REA, /*证件号码不详具体原因*/
+null as OTH_REA_EXP, /*证件号码不详其他原因说明*/
+a.name as NAME, /*病人姓名*/
+a.sex_code as SEX, /*性别代码*/
+a.birthday as BIRTHDAY, /*出生日期*/
+a.age as AGE_YEAR, /*年龄（岁）*/
+trunc(a.age2) as AGE_MONTH, /*月龄（月）*/
+null as AGE_DAY, /*天数（天）*/
+a.country_code as NATION, /*国籍*/
+a.baby_born_weight as B_WEIGHT_1, /*新生儿出生体重（一孩）*/
+null as B_WEIGHT_2, /*新生儿出生体重（二孩）*/
+a.baby_in_weight as IN_HP_WEIGHT, /*新生儿入院体重*/
+a.birth_province as BIRTH_ADDR, /*出生地（省市）*/
+a.birth_city as BIRTH_ADDR_1, /*出生地（地市）*/
+a.birth_county as BIRTH_ADDR_2, /*出生地（区县）*/
+a.native_province as ORYGIN_ADDR, /*籍贯（省市）*/
+a.native_city as ORYGIN_ADDR_1, /*籍贯（地市）*/
+a.nation_code as NATION_CODE, /*民族代码*/
+a.occupation_code as JOB_CODE, /*职业分类代码*/
+a.marriage as MARR_CODE, /*婚姻状况代码*/
+
+a.PRESENT_COUNTY as CUR_ADDR_CODE, /*现住地区编码*/
+(select  dic.name from his_sb.com_dictionary dic where dic.code = a.present_province and rownum >=1) as CUR_ADDR, /*现住地址（省市）*/
+(select dic.name from his_sb.com_dictionary dic where dic.code = a.present_city and rownum >=1) as CUR_ADDR_1, /*现住地区（地市）*/
+(select  dic.name from his_sb.com_dictionary dic where dic.code = a.present_county and rownum >=1) as CUR_ADDR_2, /*现住地址（区县）*/
+a.present_other as CUR_ADDR_3, /*现住地址（乡镇、街道）*/
+null as CUR_ADDR_4, /*现住地址（村、居委会）*/
+null as CUR_ADDR_5, /*现住地址（小区门牌号）*/
+a.work_tel as PAT_PHONE, /*电话号码*/
+a.present_postcode as CUR_POSTCODE, /*现住地址邮政编码*/
+
+a.PERMANENT_COUNTY as HR_ADDR_CODE, /*户口地区编码*/
+(select dic.name from his_sb.com_dictionary dic where dic.code = a.PERMANENT_province  and rownum >=1) as HR_ADDR, /*户口地址（省市）*/
+(select  dic.name from his_sb.com_dictionary dic where dic.code = a.PERMANENT_city  and rownum >=1) as HR_ADDR_1, /*户口地址（地市）*/
+(select  dic.name from his_sb.com_dictionary dic where dic.code = a.PERMANENT_COUNTY  and rownum >=1) as HR_ADDR_2, /*户口地址（区县）*/
+a.PERMANENT_other as HR_ADDR_3, /*户口地址（乡镇、街道）*/
+null as HR_ADDR_4, /*户口地址（村、居委会）*/
+null as HR_ADDR_5, /*户口地址（小区门牌号）*/
+a.PERMANENT_POSTCODE as HR_POSTCODE, /*户口地址邮政编码*/
+a.work_address as WORK_ORGAN, /*工作单位*/
+a.work_tel as ORGAN_PHONE, /*单位电话*/
+a.work_postcode as ORGAN_POSTCODE, /*邮政编码*/
+a.contact_name as CON_NAME, /*联系人姓名*/
+a.relationship_code as CON_PAT_CODE, /*与患者关系代码*/
+a.contact_address as CON_ADDR, /*联系人地址*/
+a.contact_tel as CON_PHONE, /*联系人电话*/
+a.in_type as IN_HP_WAY_CODE, /*入院途径代码*/
+a.in_time as IN_HP_DT, /*入院日期时间*/
+a.in_dept_code as IN_DPT_CODE, /*入院科室编码*/
+(select v.dept_name from his_sb.com_department v where rownum = 1 and v.dept_code = a.in_dept_code) as IN_DPT_NAME, /*入院科室名称*/
+a.in_dept_roomnumber as IN_HP_WARD, /*入院病房*/
+a.transfer_dept_code as TRANS_CAT, /*转科科别*/
+/*to_date(b.ext_code,'yyyy-mm-dd hh24:mi:ss') as OUT_HP_DT, /*出院日期时间*/
+a.out_time as OUT_HP_DT, /*出院日期时间*/
+a.out_dept_code as OUT_DPT_CODE, /*出院科室编号*/
+(select v.dept_name from his_sb.com_department v where rownum = 1 and v.dept_code = a.out_dept_code) as OUT_DPT_NAME, /*出院科室名称*/
+a.out_dept_roomnumber as OUT_HP_WARD, /*出院病房*/
+a.in_days as H_O_D, /*住院天数*/
+a.clinic_diag_name2 as OE_DIS_NAME, /*门急诊诊断疾病名称*/
+a.clinic_diag_code2 as OE_DIS_CODE, /*门急诊诊断疾病编码*/
+a.main_diag_code2 as HM_DIS_CODE, /*出院主要诊断疾病编码*/
+a.main_diag_name2 as HM_DIS_NAME, /*出院主要诊断疾病名称*/
+null as M_DIS_CODE, /*出院主要诊断疾病编码*/
+null as M_DIS_NAME, /*出院主要诊断疾病名称*/
+decode(a.MAIN_DIAG_CONDITION,'1','1','2','2','3','3','4') as M_DIS_COND, /*入院病情（对应主要诊断）*/
+decode(a.ext01,'1','1','2','2','3','3','5','4','5') as TRABSFERRED, /*治疗转归（对应主要诊断）*/
+null as M_DIS_DES, /*医生对主要诊断的描述*/
+aaa.diag_code2 as M_DIS_CODE_1, /*出院其他诊断疾病编码①*/
+aaa.diag_name2 as M_DIS_NAME_1, /*出院其他诊断疾病名称①*/
+aaa.in_condition_flag as M_DIS_COND_1, /*入院病情（对应其他诊断①）*/
+aaa.out_situation as TRABSFERRED_1, /*治疗转归（对应其他诊断①）*/
+bbb.diag_code2 as M_DIS_CODE_2, /*出院其他诊断疾病编码②*/
+bbb.diag_name2 as M_DIS_NAME_2, /*出院其他诊断疾病名称②*/
+bbb.in_condition_flag as M_DIS_COND_2, /*入院病情（对应其他诊断②）*/
+bbb.out_situation as TRABSFERRED_2, /*治疗转归（对应其他诊断②）*/
+ccc.diag_code2 as M_DIS_CODE_3, /*出院其他诊断疾病编码③*/
+ccc.diag_name2 as M_DIS_NAME_3, /*出院其他诊断疾病名称③*/
+ccc.in_condition_flag as M_DIS_COND_3, /*入院病情（对应其他诊断③）*/
+ccc.out_situation as TRABSFERRED_3, /*治疗转归（对应其他诊断③）*/
+ddd.diag_code2 as M_DIS_CODE_4, /*出院其他诊断疾病编码④*/
+ddd.diag_name2 as M_DIS_NAME_4, /*出院其他诊断疾病名称④*/
+ddd.in_condition_flag as M_DIS_COND_4, /*入院病情（对应其他诊断④）*/
+ddd.out_situation as TRABSFERRED_4, /*治疗转归（对应其他诊断④）*/
+null as M_DIS_CODE_5, /*出院其他诊断疾病编码⑤*/
+null as M_DIS_NAME_5, /*出院其他诊断疾病名称⑤*/
+null M_DIS_COND_5, /*入院病情（对应其他诊断⑤）*/
+null as TRABSFERRED_5, /*治疗转归（对应其他诊断⑤）*/
+null as M_DIS_CODE_6, /*出院其他诊断疾病编码⑥*/
+null as M_DIS_NAME_6, /*出院其他诊断疾病名称⑥*/
+null as M_DIS_COND_6, /*入院病情（对应其他诊断⑥）*/
+null as TRABSFERRED_6, /*治疗转归（对应其他诊断⑥）*/
+null as M_DIS_CODE_7, /*出院其他诊断疾病编码⑦*/
+null as M_DIS_NAME_7, /*出院其他诊断疾病名称⑦*/
+null as M_DIS_COND_7, /*入院病情（对应其他诊断⑦）*/
+null as TRABSFERRED_7, /*治疗转归（对应其他诊断⑦）*/
+null as M_DIS_CODE_8, /*出院其他诊断疾病编码⑧*/
+null as M_DIS_NAME_8, /*出院其他诊断疾病名称⑧*/
+null as M_DIS_COND_8, /*入院病情（对应其他诊断⑧）*/
+null as TRABSFERRED_8, /*治疗转归（对应其他诊断⑧）*/
+null as M_DIS_CODE_9, /*出院其他诊断疾病编码⑨*/
+null as M_DIS_NAME_9, /*出院其他诊断疾病名称⑨*/
+null as M_DIS_COND_9, /*入院病情（对应其他诊断⑨）*/
+null as TRABSFERRED_9, /*治疗转归（对应其他诊断⑨）*/
+a.INJURY_DIAG_NAME2 as EXTL_CAUSE, /*损伤、中毒的外部原因*/
+a.INJURY_DIAG_CODE2 as EXTL_CAUSE_CODE, /*损伤、中毒的外部原因编码*/
+a.PATHOLOGY_DIAG_NAME as PATHO_DIAG, /*病理诊断*/
+a.PATHOLOGY_DIAG_CODE as PATHO_DIAG_CODE, /*病理诊断编码*/
+a.PATHOLOGY_NUMBER as PATHOEX_NO, /*病理号*/
+a.DRUG_ALLERGY_FLAG as ALLERGY_MARK, /*药物过敏标记*/
+a.ALLERGY_DURG_NAME as ALDRUG_NAME, /*过敏药物名称*/
+a.AUTOPSY_FLAG as AUTOPSY, /*死亡患者尸检*/
+a.BLOOD_TYPE as ABO_CODE, /*ABO血型代码*/
+a.rh as RH_CODE, /*Rh血型代码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.DEPT_DIRECTOR_CODE) as SCHEAD_NAME, /*科主任姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.PROFESSIONAL_DOC_CODE) as CPHY_NAME, /*主任（副主任）医师姓名*/
+(select v.idenno from his_sb.com_employee v where rownum = 1 and v.empl_code = a.ATTENDING_DOC_CODE) as RSPHY_IDCARD, /*主治医师身份证号码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.ATTENDING_DOC_CODE)  as RSPHY_NAME, /*主治医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.INHOS_DOC_CODE) as HPHY_NAME, /*住院医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.DUTY_NURSE_CODE) as PRIMARY_NUR, /*责任护士姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.REFRESHER_DOC_CODE) as RFRPHY_NAME, /*进修医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.INTERN_DOC_CODE) as INTERN_NAME, /*实习医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.CODING_EMPL_CODE) as CODER_NAME, /*编码员姓名*/
+a.RECORD_QUALITY2 as MRQU_CODE, /*病案质量代码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.QC_DOC_CODE) as QUCTRDOC_NAME, /*质控医师姓名*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.QC_NURSE_CODE) as QUCTRNURSE, /*质控护士姓名*/
+a.QC_DATE as QUCTR_DATE, /*质控日期*/
+case when exists(select 1 from his_sb.met_mrs_base_operation v where v.inpatient_no = a.inpatient_no) then '1' else '0' end as IF_OPREA, /*是否进行手术*/
+(select count(1) from his_sb.met_mrs_base_operation v where v.inpatient_no = a.inpatient_no) as REC_NUMB, /*病案手术记录数*/
+a.OUT_TYPE as DISCHAWAYCODE, /*离院方式代码*/
+a.RECEIVING_HOS_NAME as INTORGAN_NAME, /*拟接收医疗机构名称*/
+a.IN_PLAN_FLAG as IF_31RHP, /*是否有出院31天内再住院计划*/
+a.IN_PLAN_REASON as RHP_P, /*再住院计划目的*/
+null as PAT_IH_FD, /*入院前昏迷天数*/
+null as PAT_IH_FH, /*入院前昏迷小时*/
+null as PAT_IH_FM, /*入院前昏迷分钟*/
+null as PAT_IH_BD, /*入院后昏迷天数*/
+null as PAT_IH_BH, /*入院后昏迷小时*/
+null as PAT_IH_BM, /*入院后昏迷分钟*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no) as TOTAL_COST, /*总费用*/
+(select sum(f.pay_cost+f.own_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no) as IND_PAY, /*自付金额*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010100') as GEN_MED_SF, /*一般医疗服务费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010200') as GEN_CUR_SF, /*一般治疗操作费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010300') as NURSING_FEE, /*护理费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F010400') as OTH_TRE_SF, /*其他医疗服务费用*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020100') as PATH_DIAG_FEE, /*病理诊断费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020200') as LAB_DIAG_FEE, /*实验室诊断费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020300') as IMAG_DIAG_FEE, /*影像学诊断费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F020400') as CLIN_DIAG_FEE, /*临床诊断项目费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE in('F030100','F030101')) as NON_OP_T_FEE, /*非手术治疗项目费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F030101') as NON_OP_TCP_FEE, /*其中：临床物理治疗费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE in ('F030200','F030201','F030202')) as OP_T_FEE, /*手术治疗费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F030201') as ANES_FEE, /*其中：麻醉费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F030202') as OP_FEE, /*其中：手术费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F040100') as REHAB_FEE, /*康复费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE = 'F050200') as CM_TREAT_FEE, /*中医治疗费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE  ='F060100') as W_MED_FEE, /*西药费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F060101') as ANT_COST_FEE, /*其中：抗菌药物费用*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F070100') as C_MED_FEE, /*中成药费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F070200') as CH_MED_FEE, /*中草药费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080100') as BLOOD_FEE, /*血费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080200') as ALBUMIN_FEE, /*白蛋白类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080300') as GLOBULIN_FEE, /*球蛋白类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080400') as COAG_FACT_FEE, /*凝血因子类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F080500') as COLL_FACT_FEE, /*细胞因子类制品费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F090100') as CH_USE_DMM_FEE, /*检查用一次性医用材料费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = a.inpatient_no and f.FEE_TYPE_CODE ='F090200') as TR_USE_DMM_FEE, /*治疗用一次性医用材料费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = b.inpatient_no and f.FEE_TYPE_CODE ='F090300') as OP_USE_DMM_FEE, /*手术用一次性医用材料费*/
+(select sum(f.tot_cost) from his_sb.view_mrs_patient_fee f where f.inpatient_no = b.inpatient_no and (f.FEE_TYPE_CODE ='F100100' or f.FEE_TYPE_CODE is null )) as OTHER_FEE, /*其他费用*/
+a.icudept as ICU_CODE_1, /*重症监护室编码①*/
+(select v.dept_name from his_sb.com_department v where v.dept_code = a.icudept) as ICU_NAME_1, /*重症监护室名称①*/
+a.icuin as IN_ICU_DATE_1, /*进入重症监护室日期时间①*/
+a.icuout as OUT_ICU_DATE_1, /*转出重症监护室日期时间①*/
+null as ICU_CODE_2, /*重症监护室编码②*/
+null as ICU_NAME_2, /*重症监护室名称②*/
+null as IN_ICU_DATE_2, /*进入重症监护室日期时间②*/
+null as OUT_ICU_DATE_2, /*转出重症监护室日期时间②*/
+null as ICU_CODE_3, /*重症监护室编码③*/
+null as ICU_NAME_3, /*重症监护室名称③*/
+null as IN_ICU_DATE_3, /*进入重症监护室日期时间③*/
+null as OUT_ICU_DATE_3, /*转出重症监护室日期时间③*/
+null as IF_CRI_CASE, /*是否危重病例*/
+null as IF_DIF_CASE, /*是否疑难病例*/
+null as IF_INF_CASE, /*是否传染病或疑似病例*/
+null as IF_UN_PNEU, /*是否不明原因肺炎病例*/
+null as IF_MDT_CASE, /*是否MDT病历*/
+null as IF_SD_CASE, /*是否单病种病例*/
+null as IF_DO_CASE, /*是否日间手术病例*/
+null as IF_TEACH_MR, /*是否教学查房病历*/
+a.ext02 as OPHPDIAG_CI, /*门诊与出院诊断符合标识*/
+a.ext03 as ADDIAG_CI, /*入院与出院诊断符合标识*/
+a.ext04 as OPERDIAG_CI, /*术前与术后诊断符合标识*/
+a.ext05 as CCASEDIAG_CI, /*临床与病理诊断符合标识*/
+a.EXT06 as RCASEDIAG_CI, /*放射与病理诊断符合标识*/
+a.EXT07 as RSC_NO, /*抢救次数*/
+a.EXT08 as SC_RSC_NO, /*抢救成功次数*/
+a.EXT09 as CPW_MANA_CODE, /*临床路径管理代码*/
+(select v.idenno from his_sb.com_employee v where rownum = 1 and v.empl_code = a.OPER_CODE) as REC_IDCARD, /*记录人身份证号码*/
+(select v.empl_name from his_sb.com_employee v where rownum = 1 and v.empl_code = a.OPER_CODE) as REC_NAME, /*记录人姓名*/
+to_date(b.ext_code,'yyyy-mm-dd hh24:mi:ss') as RCD_DT, /*记录日期时间*/
+nvl(a.FILE_DATE,a.oper_date) as POF_DT /*归档日期时间*/
+from his_sb.met_mrs_base a
+inner join his_sb.fin_ipr_inmaininfo b on a.inpatient_no = b.inpatient_no
+inner join his_sb.com_patientinfo c on b.card_no = c.card_no
+left join cte1 aaa on a.inpatient_no = aaa.inpatient_no and aaa.rank1 = 1
+left join cte1 bbb on a.inpatient_no = bbb.inpatient_no and bbb.rank1 = 2
+left join cte1 ccc on a.inpatient_no = ccc.inpatient_no and ccc.rank1 = 3
+left join cte1 ddd on a.inpatient_no = ddd.inpatient_no and ddd.rank1 = 4
+left join cte1 eee on a.inpatient_no = eee.inpatient_no and eee.rank1 = 5
+
+where a.RECORD_STATUS = '6' and nvl(b.ext_flag2,'0') <> '1'
+and a.out_time >= to_date('2018-05-01','yyyy-mm-dd')
+and a.out_time < to_date('2018-06-01','yyyy-mm-dd')
