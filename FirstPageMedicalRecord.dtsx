@@ -231,7 +231,6 @@ and a.out_time < to_date('2018-06-01','yyyy-mm-dd')
 
 ==========================FirstPageMedicalRecord.dtsx  第二版本 修改了 住址编号 等===================================
 
-
 with cte1 
 as
 (
