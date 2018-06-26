@@ -230,7 +230,6 @@ and a.out_time >= to_date('2018-05-01','yyyy-mm-dd')
 and a.out_time < to_date('2018-06-01','yyyy-mm-dd')
 
 ==========================FirstPageMedicalRecord.dtsx  第二版本 修改了 住址编号 等===================================
-
 with cte1 
 as
 (
@@ -256,8 +255,8 @@ a.sex_code as SEX, /*性别代码*/
 a.birthday as BIRTHDAY, /*出生日期*/
 a.age as AGE_YEAR, /*年龄（岁）*/
 trunc(a.age2) as AGE_MONTH, /*月龄（月）*/
-null as AGE_DAY, /*天数（天）*/
-a.country_code as NATION, /*国籍*/
+SUBSTR(a.age2,instr(a.age2,'.')+1) as AGE_DAY, /*天数（天）*/
+a.country_code as NATION, /*国籍*/ 
 a.baby_born_weight as B_WEIGHT_1, /*新生儿出生体重（一孩）*/
 null as B_WEIGHT_2, /*新生儿出生体重（二孩）*/
 a.baby_in_weight as IN_HP_WEIGHT, /*新生儿入院体重*/
