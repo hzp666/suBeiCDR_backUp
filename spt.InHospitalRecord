@@ -1,0 +1,243 @@
+USE [shengPingTai]
+GO
+
+/****** Object:  View [spt].[InHospitalRecord]    Script Date: 2018/6/26 15:22:40 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER view [spt].[InHospitalRecord]
+as
+select 
+a.Inhosp_No	as	IN_HOS_ID	,	       /*!!入院唯一ID号*/	
+case when isnull(d.ID_NUMBER,'') = '' then '99' else '01' end	as	CARDTYPE	,	       /*!!患者就诊卡证类型*/	
+case when isnull(d.ID_NUMBER,'')= '' then d.Visit_Card_No else d.ID_NUMBER end	as	CARDNO	,	           /*!!患者就诊卡证号码*/	
+c.Pat_Name	as	NAME	,	   /*!!病人姓名*/	
+c.Sex_Code	as	SEX	,	       /*!!性别代码*/	
+c.Date_Birth	as	BIRTHDAY,   /*!!出生日期*/	
+a.Inhosp_No	as	HP_S_NO	,	           /*!!住院号	*/	
+c.MR_No	as	MR_NO	,	       /*病案号	*/	
+c.Admit_Date	as	HP_DATE	,  /*!!入院日期时间*/	
+d.Admit_Way_Code	as	SOURCE_CODE	,	       /*!!入院病人来源代码*/	
+null	as	PROVIDEHX_NAME	,	   /*供史者姓名	*/	
+null	as	RELA_CODE	,	       /*与患者关系代码	*/	
+a.Pat_Chief_Desc	as	SUBJ_COMPLAINT	,	/*!!病人主诉*/	
+--isnull(case when a.Document_Name in ('产科入院记录','新生儿科入院记录') then SUBSTRING(a.document_content,CHARINDEX('现病史',a.document_content),charindex('既往史',a.document_content)-charindex('现病史',a.document_content) )
+--else a.Curr_Disease_History end,substring(a.Document_Content,CHARINDEX('既往史',a.Document_Content),charindex('个人史',a.Document_Content)-CHARINDEX('既往史',a.Document_Content))) as	PRES_HX	,	/*!!现病史描述*/	
+--isnull(case when a.Document_Name = '新生儿科入院记录' then  substring(a.Document_Content,CHARINDEX('既往史',a.Document_Content),charindex('个人史',a.Document_Content)-CHARINDEX('既往史',a.Document_Content))
+--else a.Disease_History end,) as	PREV_HX	,	/*!!既往史描述*/	
+isnull(a.Curr_Disease_History,SUBSTRING(a.document_content,CHARINDEX('现病史',a.document_content),charindex('既往史',a.document_content)-charindex('现病史',a.document_content))) as PRES_HX	,	/*!!现病史描述*/
+isnull(a.Disease_History,substring(a.Document_Content,CHARINDEX('既往史',a.Document_Content),charindex('个人史',a.Document_Content)-CHARINDEX('既往史',a.Document_Content))) as PREV_HX	,	/*!!既往史描述*/
+a.Personal_History	as	PER_HIS	,	/*个人史*/	
+a.Obstetrical_History	as	OBS_HIS	,	/*婚育史（包括：月经史）*/	
+a.Family_History	as	FAM_HIS	,	/*家族史*/	
+a.Temperature	as	TEMP	,	/*体温（℃）*/	
+a.Pulse_Rate	as	PR	,	/*脉博（次/min） */	
+a.Breathing_Rate as	RR	,	/*呼吸频率 */	
+a.Blood_Pressure_high as	SBP	,	/*收缩压（mmHg）*/	
+a.Blood_Pressure	as	DBP	,	/*舒张压（mmHg）*/	
+--isnull(a.General_Exam_Result,'') + isnull(a.Nerve_Exam_Result,'')+isnull(a.Accessory_Exam_Result,'') as PHY_EX	,	/*体格检查*/
+'体温：'+isnull(a.Temperature,'')+' 脉搏：'+ isnull(a.Pulse_Rate,'') + '次/min' + ' 呼吸频率：' + isnull(a.Breathing_Rate,'') + '次/min' + '舒张压：' +isnull(a.blood_pressure,'') + ' 收缩压：' + isnull(a.blood_pressure_high,'') + isnull(a.General_Exam_Result,'') + isnull(a.Nerve_Exam_Result,'')+isnull(a.Accessory_Exam_Result,'') as PHY_EX	,	/*体格检查*/ 
+a.Specific_Situation	as	SPE_SIT	,	/*专科情况*/	
+a.Accessory_Exam_Result	as	AUXI_EX	,	/*辅助检查（实验室及器械检查）*/	
+null	as	CAS_ABS	,	                  /*病历摘要*/	
+null	as	TCM_FOURWAYS	,	         /*中医“四诊”观察结果等详细描述*/	
+c.Main_Diag_Code	as	PD_DIS_CODE	,	/*初步主要诊断疾病编码*where Diag_Categ_Code ='5504' and Main_Flag='1'/	*/
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Main_Diag_Code)	as	PD_DIS_NAME	,	/*初步主要诊断疾病名称	*/
+c.Other_Diag_Code1	as	PD_DIS_CODE_1	,	/*初步其他诊断①疾病编码*where Diag_Categ_Code ='5504' and Main_Flag='0'/	*/
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code1)	as	PD_DIS_NAME_1	,	/*初步其他诊断①疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_2	,	/*初步其他诊断②疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code2)	as	PD_DIS_NAME_2	,	/*初步其他诊断②疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_3	,	/*初步其他诊断③疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code3)	as	PD_DIS_NAME_3	,	/*初步其他诊断③疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_4	,	/*初步其他诊断④疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code4)	as	PD_DIS_NAME_4	,	/*初步其他诊断④疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_5	,	/*初步其他诊断⑤疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code5)	as	PD_DIS_NAME_5	,	/*初步其他诊断⑤疾病名称*/	
+null	as	PD_DIS_DES	,	/*	医生对初步诊断的描述*/	
+null 	as	PD_DOC_NAME	,	/*	初步诊断医师姓名*/	
+c.Main_Diag_Code	as	MD_DIS_CODE	,	/*	入院主要诊断疾病编码where Diag_Categ_Code ='5501' and Main_Flag='1'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Main_Diag_Code)	as	MD_DIS_NAME	,	/*	入院主要诊断疾病名称*/	
+c.Other_Diag_Code1	as	MD_DIS_CODE_1	,	/*	入院其他诊断①疾病代码where Diag_Categ_Code ='5501' and Main_Flag='0'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code1)	as	MD_DIS_NAME_1	,	/*	入院其他诊断①疾病名称*/	
+c.Other_Diag_Code2	as	MD_DIS_CODE_2	,	/*入院其他诊断②疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code2)	as	MD_DIS_NAME_2	,	/*入院其他诊断②疾病名称*/	
+c.Other_Diag_Code3	as	MD_DIS_CODE_3	,	/*入院其他诊断③疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code3)	as	MD_DIS_NAME_3	,	/*入院其他诊断③疾病名称*/	
+c.Other_Diag_Code4	as	MD_DIS_CODE_4	,	/*入院其他诊断④疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code4)	as	MD_DIS_NAME_4	,	/*入院其他诊断④疾病名称*/	
+c.Other_Diag_Code5	as	MD_DIS_CODE_5	,	/*入院其他诊断⑤疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code5)	as	MD_DIS_NAME_5	,	/*入院其他诊断⑤疾病名称*/	
+c.Other_Diag_Code6	as	MD_DIS_CODE_6	,	/*入院其他诊断⑥疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code6)	as	MD_DIS_NAME_6	,	/*入院其他诊断⑥疾病名称*/	
+c.Other_Diag_Code7	as	MD_DIS_CODE_7	,	/*入院其他诊断⑦疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code7)	as	MD_DIS_NAME_7	,	/*入院其他诊断⑦疾病名称*/	
+c.Other_Diag_Code8	as	MD_DIS_CODE_8	,	/*入院其他诊断⑧疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code8)	as	MD_DIS_NAME_8	,	/*入院其他诊断⑧疾病名称*/	
+c.Other_Diag_Code9	as	MD_DIS_CODE_9	,	/*入院其他诊断⑨疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code9)	as	MD_DIS_NAME_9	,	/*入院其他诊断⑨疾病名称*/	
+null	as	MD_DIS_DES	,	/*医生对入院诊断的描述*/	
+null	as	RSPHY_IDCARD	,	/*主治医师身份证号码	用Visit_Dr_Code关联员工字典身份证*/	
+(select top 1 STAFF_NAME from cdr.dbo.IM_Staff(nolock) where STAFF_CODE = c.Attend_Dr_Code)	as	RSPHY_NAME	,	/*主治医师姓名*/	
+c.Post_Admit_Diag_Confirm_Date	as	IH_DIS_DATE	,	/*入院诊断日期	*/	
+c.Main_Diag_Code	as	RD_DIS_CODE	,	/*修正主要诊断疾病编码	where Diag_Categ_Code ='5562' and Main_Flag='1'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10(nolock) where ICD10_CODE = c.Main_Diag_Code)	as	RD_DIS_NAME	,	/*修正主要诊断疾病名称*/	
+c.Other_Diag_Code1	as	RD_DIS_CODE_1	,	/*修正其他诊断①疾病编码	where Diag_Categ_Code ='5562' and Main_Flag='0'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code1)	as	RD_DIS_NAME_1	,	/*修正其他诊断①疾病名称*/	
+c.Other_Diag_Code2	as	RD_DIS_CODE_2	,	/*修正其他诊断②疾病编码*/
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code2)	as	RD_DIS_NAME_2	,	/*修正其他诊断②疾病名称*/	
+c.Other_Diag_Code3	as	RD_DIS_CODE_3	,	/*修正其他诊断③疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code3)	as	RD_DIS_NAME_3	,	/*修正其他诊断③疾病名称*/	
+c.Other_Diag_Code4	as	RD_DIS_CODE_4	,	/*修正其他诊断④疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code4)	as	RD_DIS_NAME_4	,	/*修正其他诊断④疾病名称*/	
+c.Other_Diag_Code5	as	RD_DIS_CODE_5	,	/*修正其他诊断⑤疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code5)	as	RD_DIS_NAME_5	,	/*修正其他诊断⑤疾病名称*/	
+null	as	RD_DIS_DES	,	/*医生对修正诊断的描述*/	
+c.Attend_Dr_Code	as	RD_DOC_NAME	,	/*修正诊断医师姓名*/	
+a.Revised_Diag_Date	as	RD_DIS_DATE	,	/*修正诊断日期*/	
+null	as	IF_DIF_CASE	,	/*是否疑难病例*/	
+null	as	IF_CRI_CASE	,	/*是否危重病例*/	
+null	as	IF_INF_CASE	,	/*是否传染病或疑似病例*/	
+null	as	IF_UN_PNEU	,	/*是否不明原因肺炎病例*/	
+'321002468830683' 	as	ORGAN_CODE	,	/*!!医疗机构编号*/	
+'苏北人民医院'	as	ORGAN_NAME	,	/*!!医疗机构名称*/	
+c.Admit_Dept_Code	as	IH_DPT_CODE	,	/*入院科室编码*/	
+null	as	IH_DPT_NAME	,	/*入院科室名称*/	
+d.Record_Date	as	RCD_DT	,	/*记录日期时间*/	
+isnull(c.file_date,c.oper_date)	as	POF_DT,		/*!!归档日期时间*/	
+d.Discharge_Date as Discharge_Date
+from							
+cdr.dbo.AM_Admit_Record(nolock)  a,	
+cdr.dbo.AM_Medical_Records_Home(nolock) c,
+cdr.dbo.PA_Inhospital_Registration(nolock) d
+where a.Inhosp_No = c.Inhosp_No
+and a.Inhosp_No = d.Inhosp_No
+and c.MR_Status_code = '6' AND d.dayroom_flag = '0'
+and charindex('24小 时 入 出 院 记 录',a.Document_Content) = 0
+and charindex('日间病房入、出院记录',a.Document_Content) = 0
+/*union all
+select 
+a.Inhosp_No	as	IN_HOS_ID	,	       /*!!入院唯一ID号*/	
+case when isnull(d.ID_NUMBER,'') = '' then '99' else '01' end	as	CARDTYPE	,	       /*!!患者就诊卡证类型*/	
+case when isnull(d.ID_NUMBER,'')= '' then d.Visit_Card_No else d.ID_NUMBER end	as	CARDNO	,	           /*!!患者就诊卡证号码*/	
+c.Pat_Name	as	NAME	,	   /*!!病人姓名*/	
+c.Sex_Code	as	SEX	,	       /*!!性别代码*/	
+c.Date_Birth	as	BIRTHDAY,   /*!!出生日期*/	
+a.Inhosp_No	as	HP_S_NO	,	           /*!!住院号	*/	
+c.MR_No	as	MR_NO	,	       /*病案号	*/	
+c.Admit_Date	as	HP_DATE	,  /*!!入院日期时间*/	
+d.Admit_Way_Code	as	SOURCE_CODE	,	       /*!!入院病人来源代码*/	
+null	as	PROVIDEHX_NAME	,	   /*供史者姓名	*/	
+null	as	RELA_CODE	,	       /*与患者关系代码	*/	
+a.Pat_Chief_Desc	as	SUBJ_COMPLAINT	,	/*!!病人主诉*/	
+a.Curr_Disease_History	as	PRES_HX	,	/*!!现病史描述*/	
+null as	PREV_HX	,	/*!!既往史描述*/	
+null as	PER_HIS	,	/*个人史*/	
+null as	OBS_HIS	,	/*婚育史（包括：月经史）*/	
+null as	FAM_HIS	,	/*家族史*/	
+null as	TEMP	,	/*体温（℃）*/	
+null as	PR	,	/*脉博（次/min） */	
+null as	RR	,	/*呼吸频率 */	
+null	as	SBP	,	/*收缩压（mmHg）*/	
+null	as	DBP	,	/*舒张压（mmHg）*/	
+null	as	PHY_EX	,	/*体格检查*/	
+null	as	SPE_SIT	,	/*专科情况*/	
+null	as	AUXI_EX	,	/*辅助检查（实验室及器械检查）*/	
+null	as	CAS_ABS	,	                  /*病历摘要*/	
+null	as	TCM_FOURWAYS	,	         /*中医“四诊”观察结果等详细描述*/	
+c.Main_Diag_Code	as	PD_DIS_CODE	,	/*初步主要诊断疾病编码*where Diag_Categ_Code ='5504' and Main_Flag='1'/	*/
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Main_Diag_Code)	as	PD_DIS_NAME	,	/*初步主要诊断疾病名称	*/
+c.Other_Diag_Code1	as	PD_DIS_CODE_1	,	/*初步其他诊断①疾病编码*where Diag_Categ_Code ='5504' and Main_Flag='0'/	*/
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code1)	as	PD_DIS_NAME_1	,	/*初步其他诊断①疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_2	,	/*初步其他诊断②疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code2)	as	PD_DIS_NAME_2	,	/*初步其他诊断②疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_3	,	/*初步其他诊断③疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code3)	as	PD_DIS_NAME_3	,	/*初步其他诊断③疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_4	,	/*初步其他诊断④疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code4)	as	PD_DIS_NAME_4	,	/*初步其他诊断④疾病名称*/	
+c.Other_Diag_Code2	as	PD_DIS_CODE_5	,	/*初步其他诊断⑤疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code5)	as	PD_DIS_NAME_5	,	/*初步其他诊断⑤疾病名称*/	
+null	as	PD_DIS_DES	,	/*	医生对初步诊断的描述*/	
+null 	as	PD_DOC_NAME	,	/*	初步诊断医师姓名*/	
+c.Main_Diag_Code	as	MD_DIS_CODE	,	/*	入院主要诊断疾病编码where Diag_Categ_Code ='5501' and Main_Flag='1'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Main_Diag_Code)	as	MD_DIS_NAME	,	/*	入院主要诊断疾病名称*/	
+c.Other_Diag_Code1	as	MD_DIS_CODE_1	,	/*	入院其他诊断①疾病代码where Diag_Categ_Code ='5501' and Main_Flag='0'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code1)	as	MD_DIS_NAME_1	,	/*	入院其他诊断①疾病名称*/	
+c.Other_Diag_Code2	as	MD_DIS_CODE_2	,	/*入院其他诊断②疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code2)	as	MD_DIS_NAME_2	,	/*入院其他诊断②疾病名称*/	
+c.Other_Diag_Code3	as	MD_DIS_CODE_3	,	/*入院其他诊断③疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code3)	as	MD_DIS_NAME_3	,	/*入院其他诊断③疾病名称*/	
+c.Other_Diag_Code4	as	MD_DIS_CODE_4	,	/*入院其他诊断④疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code4)	as	MD_DIS_NAME_4	,	/*入院其他诊断④疾病名称*/	
+c.Other_Diag_Code5	as	MD_DIS_CODE_5	,	/*入院其他诊断⑤疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code5)	as	MD_DIS_NAME_5	,	/*入院其他诊断⑤疾病名称*/	
+c.Other_Diag_Code6	as	MD_DIS_CODE_6	,	/*入院其他诊断⑥疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code6)	as	MD_DIS_NAME_6	,	/*入院其他诊断⑥疾病名称*/	
+c.Other_Diag_Code7	as	MD_DIS_CODE_7	,	/*入院其他诊断⑦疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code7)	as	MD_DIS_NAME_7	,	/*入院其他诊断⑦疾病名称*/	
+c.Other_Diag_Code8	as	MD_DIS_CODE_8	,	/*入院其他诊断⑧疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code8)	as	MD_DIS_NAME_8	,	/*入院其他诊断⑧疾病名称*/	
+c.Other_Diag_Code9	as	MD_DIS_CODE_9	,	/*入院其他诊断⑨疾病代码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code9)	as	MD_DIS_NAME_9	,	/*入院其他诊断⑨疾病名称*/	
+null	as	MD_DIS_DES	,	/*医生对入院诊断的描述*/	
+null	as	RSPHY_IDCARD	,	/*主治医师身份证号码	用Visit_Dr_Code关联员工字典身份证*/	
+(select top 1 STAFF_NAME from cdr.dbo.IM_Staff(nolock) where STAFF_CODE = c.Attend_Dr_Code)	as	RSPHY_NAME	,	/*主治医师姓名*/	
+c.Post_Admit_Diag_Confirm_Date	as	IH_DIS_DATE	,	/*入院诊断日期	*/	
+c.Main_Diag_Code	as	RD_DIS_CODE	,	/*修正主要诊断疾病编码	where Diag_Categ_Code ='5562' and Main_Flag='1'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10(nolock) where ICD10_CODE = c.Main_Diag_Code)	as	RD_DIS_NAME	,	/*修正主要诊断疾病名称*/	
+c.Other_Diag_Code1	as	RD_DIS_CODE_1	,	/*修正其他诊断①疾病编码	where Diag_Categ_Code ='5562' and Main_Flag='0'*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code1)	as	RD_DIS_NAME_1	,	/*修正其他诊断①疾病名称*/	
+c.Other_Diag_Code2	as	RD_DIS_CODE_2	,	/*修正其他诊断②疾病编码*/
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code2)	as	RD_DIS_NAME_2	,	/*修正其他诊断②疾病名称*/	
+c.Other_Diag_Code3	as	RD_DIS_CODE_3	,	/*修正其他诊断③疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code3)	as	RD_DIS_NAME_3	,	/*修正其他诊断③疾病名称*/	
+c.Other_Diag_Code4	as	RD_DIS_CODE_4	,	/*修正其他诊断④疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code4)	as	RD_DIS_NAME_4	,	/*修正其他诊断④疾病名称*/	
+c.Other_Diag_Code5	as	RD_DIS_CODE_5	,	/*修正其他诊断⑤疾病编码*/	
+(select top 1 ICD10_NAME from cdr.dbo.im_icd10 where ICD10_CODE = c.Other_Diag_Code5)	as	RD_DIS_NAME_5	,	/*修正其他诊断⑤疾病名称*/	
+null	as	RD_DIS_DES	,	/*医生对修正诊断的描述*/	
+c.Attend_Dr_Code	as	RD_DOC_NAME	,	/*修正诊断医师姓名*/	
+null	as	RD_DIS_DATE	,	/*修正诊断日期*/	
+null	as	IF_DIF_CASE	,	/*是否疑难病例*/	
+null	as	IF_CRI_CASE	,	/*是否危重病例*/	
+null	as	IF_INF_CASE	,	/*是否传染病或疑似病例*/	
+null	as	IF_UN_PNEU	,	/*是否不明原因肺炎病例*/	
+'321002468830683' 	as	ORGAN_CODE	,	/*!!医疗机构编号*/	
+'苏北人民医院'	as	ORGAN_NAME	,	/*!!医疗机构名称*/	
+c.Admit_Dept_Code	as	IH_DPT_CODE	,	/*入院科室编码*/	
+null	as	IH_DPT_NAME	,	/*入院科室名称*/	
+d.Record_Date	as	RCD_DT	,	/*记录日期时间*/	
+isnull(c.file_date,c.oper_date)	as	POF_DT,		/*!!归档日期时间*/	
+'1' as H24_Flag
+from							
+cdr.dbo.AM_24H_Admit_Discharge_Record(nolock)  a,	
+cdr.dbo.AM_Medical_Records_Home(nolock) c,
+cdr.dbo.PA_Inhospital_Registration(nolock) d
+where a.Inhosp_No = c.Inhosp_No
+and a.Inhosp_No = d.Inhosp_No
+and c.MR_Status_code = '6'*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+
+
