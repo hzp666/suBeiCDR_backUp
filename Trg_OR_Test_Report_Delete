@@ -1,0 +1,69 @@
+USE [hisdata]
+GO
+
+/****** Object:  Trigger [dbo].[Trg_OM_Order_Detail_Delete]    Script Date: 03/20/2018 14:58:38 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+/*  the annotation note refer to the Trigger For Update，参数等 详细的注释说明，看update的那个 触发器 */
+
+
+create  trigger [dbo].[Trg_OR_Test_Report_Delete]
+on [dbo].[REPORTFORM]
+after Delete
+as
+IF @@ROWCOUNT = 0 RETURN			/*如果Delete条目为0的话，跳出该次触发*/
+ELSE
+BEGIN
+	set nocount on
+	set xact_abort on 
+	begin try
+	begin tran
+		declare @SECTIONNO nvarchar(50)
+				,@TESTTYPENO nvarchar(50)
+				,@SAMPLENO nvarchar(20)	,
+				@type nvarchar(100),
+				@begin_date datetime2(3) = getdate(),
+				@trigger_name nvarchar(100) = 'Trg_OR_Test_Report_Delete',
+				@trigger_table nvarchar(100) = 'REPORTFORM',
+				@target_table nvarchar(100) = 'OR_Test_Report',
+				@trigger_type nvarchar(20) = 'Delete',			/*变量赋值与申明会改变@@rowcount的值*/
+				@change_num int
+		select @change_num = count(1) from deleted		/*保存更改的条目到变量中*/
+		if @change_num = 1								/*依据更改条目，判断是否使用游标*/
+		begin
+			select  @SECTIONNO = SECTIONNO,
+			@TESTTYPENO = TESTTYPENO,
+			@SAMPLENO = SAMPLENO,
+			@type = TYPE from deleted
+			exec CDR.[dbo].[Proc_OR_Test_Report_Delete] @SECTIONNO,@TESTTYPENO,@SAMPLENO
+			exec Trigger_Log.dbo.[Proc_Log_Trigger_Success] @trigger_name,@trigger_table,@trigger_type,@type,@SECTIONNO,@target_table,@begin_date
+		end
+		else
+		begin
+			declare c cursor FAST_FORWARD  for
+				select SECTIONNO,TESTTYPENO,SAMPLENO,TYPE
+				from deleted
+			OPEN c
+			fetch next from c into @SECTIONNO,@TESTTYPENO,@SAMPLENO,@type
+			while @@FETCH_STATUS = 0
+			begin
+				exec CDR.[dbo].[Proc_OR_Test_Report_Delete] @SECTIONNO,@TESTTYPENO,@SAMPLENO
+				exec Trigger_Log.dbo.[Proc_Log_Trigger_Success] @trigger_name,@trigger_table,@trigger_type,@type,@SECTIONNO,@target_table,@begin_date
+				fetch next from c into @SECTIONNO,@TESTTYPENO,@SAMPLENO,@type
+			end
+			close c;
+			deallocate c;
+		end
+	commit tran
+	end try
+	begin catch
+		rollback tran;
+		exec Trigger_Log.dbo.Proc_Log_Trigger_Error @trigger_name,@trigger_table,@trigger_type,@type,@target_table,@SECTIONNO
+	end catch
+	set xact_abort off
+END
+GO
