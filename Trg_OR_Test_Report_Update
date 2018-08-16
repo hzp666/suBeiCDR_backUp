@@ -1,0 +1,68 @@
+USE [hisdata]
+GO
+
+/****** Object:  Trigger [dbo].[Trg_OM_Order_Detail_Update]    Script Date: 03/20/2018 15:57:31 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+create  trigger [dbo].[Trg_OR_Test_Report_Update]     /* trigger's name */
+on [dbo].[REPORTFORM]										/* trigger on which table */
+after update												/* trigger's type,eg:delete,insert,delete */
+as
+IF @@ROWCOUNT = 0 RETURN									/*如果update条目为0的话，跳出该次触发*/
+ELSE
+BEGIN
+	set nocount on
+	set xact_abort on										/*  for if any error then rollback and stop */
+	begin try
+	begin tran												/* begin transaction */
+		declare @SECTIONNO nvarchar(50)
+				,@TESTTYPENO nvarchar(50)
+				,@SAMPLENO nvarchar(20)	,						/* the source table's key column  */
+				@type nvarchar(100),						/*  the type of the date changes,eg:delete,insert,update... */
+				@begin_date datetime2(3) = getdate(),       /* for record the transaction's parameter */
+				@trigger_name nvarchar(100) = 'Trg_OR_Test_Report_Update',  /* for record the transaction's parameter */
+				@trigger_table nvarchar(100) = 'REPORTFORM',      /* for record the transaction's parameter */
+				@target_table nvarchar(100) = 'OR_Test_Report',   /* for record the transaction's parameter */
+				@trigger_type nvarchar(20) = 'Update',			/*变量赋值与申明会改变@@rowcount的值*/
+				@change_num int								/* for record the transaction's parameter */
+		select @change_num = count(1) from inserted			/*保存更改的条目到变量中*/
+		if @change_num = 1									/*依据更改条目，判断是否使用游标*/
+		begin
+			select  @SECTIONNO = SECTIONNO,
+			@TESTTYPENO = TESTTYPENO,
+			@SAMPLENO = SAMPLENO,
+			@type = TYPE from inserted          
+			exec CDR.[dbo].[Proc_OR_Test_Report_Delete] @SECTIONNO,@TESTTYPENO,@SAMPLENO
+			exec CDR.[dbo].[Proc_OR_Test_Report_Insert] @SECTIONNO,@TESTTYPENO,@SAMPLENO
+			exec Trigger_Log.dbo.[Proc_Log_Trigger_Success] @trigger_name,@trigger_table,@trigger_type,@type,@SECTIONNO,@target_table,@begin_date
+		end
+		else
+		begin
+			declare c cursor FAST_FORWARD  for
+				select SECTIONNO,TESTTYPENO,SAMPLENO,TYPE
+				from inserted
+			OPEN c
+			fetch next from c into @SECTIONNO,@TESTTYPENO,@SAMPLENO,@type
+			while @@FETCH_STATUS = 0
+			begin
+				exec CDR.[dbo].[Proc_OR_Test_Report_Delete] @SECTIONNO,@TESTTYPENO,@SAMPLENO
+				exec CDR.[dbo].[Proc_OR_Test_Report_Insert] @SECTIONNO,@TESTTYPENO,@SAMPLENO
+				exec Trigger_Log.dbo.[Proc_Log_Trigger_Success] @trigger_name,@trigger_table,@trigger_type,@type,@SECTIONNO,@target_table,@begin_date
+				fetch next from c into @SECTIONNO,@TESTTYPENO,@SAMPLENO,@type
+			end
+			close c;
+			deallocate c;
+		end
+	commit tran
+	end try
+	begin catch
+		rollback tran;
+		exec Trigger_Log.dbo.Proc_Log_Trigger_Error @trigger_name,@trigger_table,@trigger_type,@type,@target_table,@SECTIONNO
+	end catch
+	set xact_abort off
+END
+GO
