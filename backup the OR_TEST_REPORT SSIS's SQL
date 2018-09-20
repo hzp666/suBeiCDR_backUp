@@ -1,4 +1,114 @@
 SELECT 
+a.serialno as Lis_BarCode,/*检验条码号*/
+ '' as Key_ID,
+ '' as MI_Code,
+a.bed as bed,
+ a.DiagMethod,
+ a.ReceiveDate as RECEIVE_DATE,
+ a.SectionNo,
+ (select c.cname from lis.pgroup c where c.SectionNo = a.SectionNo) as SectionName,
+ 
+
+  a.patno as pat_no ,  /*ID号*/
+ (select d.cname from lis.District d where a.districtno = d.districtno and rownum = 1) as ward_name,  /*病区*/
+ a.bed as Bed_No,  /*床号*/
+ (select s.cname from lis.SampleType s where s.SampleTypeNo = a.SampleTypeNo and rownum = 1) as  SAMPLE_Type,/*样本种类*/
+ a.zdy1 as Clinic_Diag,  /*临床诊断*/
+ a.doctor as send_doctor,  /*送检医师*/
+ a.FormMemo as note,  /*备注*/
+ (select s.sickTypeNo from lis.sickType s where s.SICKTYPENO = a.SampleTypeNo and rownum = 1)  as pat_type_code, /*患者类型编码：4：新住院；1：门诊 ；3：体检*/
+ 
+ 
+ 
+ a.TestTypeNo,
+a.SampleNo as Test_Report_No,
+a.zdy2 as Test_Requisition_No,
+null as EMPI_ID,
+nvl2(a.zdy4,(select distinct hiso.card_no from his_sb.fin_opr_register@dblink_his_mirror hiso where hiso.clinic_code = a.zdy4),(select hisi.card_no from his_sb.fin_ipr_inmaininfo@dblink_his_mirror hisi where hisi.inpatient_no = a.zdy3)) as Visit_Card_No,
+a.zdy4 as Visit_No,
+nvl2( a.zdy4,null,a.zdy3) as Inhosp_No,
+ '' as Visit_Num,
+null as MR_No,
+a.CName as Pat_Name,
+a.GenderNo as Sex_Name,
+a.Birthday as Date_Birth,
+ '' as Test_Tube_Barcode,
+(SELECT min(p.supergroupno)
+FROM lis.pgroup p  WHERE p.sectionno = a.SECTIONNO) as Test_Item_Type_Code,
+(SELECT min(s.cname)
+FROM lis.pgroup p,lis.supergroup s WHERE p.supergroupno = s.supergroupno and p.sectionno = a.SECTIONNO) AS Test_Item_Type_Name,
+b.parItemNO as Test_Item_Code,
+(SELECT min(c.CName) FROM lis.testitem c WHERE c.itemno = b.parItemNO) AS Test_Item_Name,
+b.itemNo as Test_Detail_Item_Code,
+(SELECT MIN(CName) FROM lis.testitem c WHERE b.itemno = c.itemno) 
+        AS Test_Detail_Item_Name,
+null as Test_Dept_Index_No,
+null  as Test_Dept_Code,
+null as Test_Dept_Name,
+null as Test_Dr_Index_No,
+null  as Test_Dr_Code,
+a.technician as Test_Dr_Name,
+null as Check_Dr_Code,
+a.checker as Check_Dr_Name,
+null as Input_Dr_Code,
+a.Operator as Input_Dr_Name,
+a.Doctor as Report_Dr_Index_No,
+null as Report_Dr_Code,
+a.operator  as Report_Dr_Name,
+nvl2(a.checkdate,1,0) as Test_Result_Status_Code,
+ '' as Microbe_Name,
+null as Bacteria_Cultivate_Result,
+ '' as Bacterial_Colony_Count,
+ '' as Smear_Result,
+ '' as MIC,
+ '' as Diameter,
+ '' as Normal_Value_Upper_Limit,
+ '' as Normal_Value_Lower_Limit,
+
+ b.RefRange as Reference_Value,
+ CASE WHEN b.ResultStatus LIKE '%H%' THEN 'h' 
+      WHEN b.ResultStatus LIKE '%L%' THEN 'l'
+      ELSE 'z' END   as Normal_Flag,
+b.ReportValue as Test_Result_Value,
+(SELECT MIN(unit) FROM lis.testitem c WHERE b.itemno = c.itemno) as Test_Result_Value_Unit,
+b.ReportDesc as Test_Result,
+a.zdy3 as Encounter_ID,
+ a.serialno || '_' || b.parItemNO as Requisition_Item,
+ (sELECT c.DispOrder FROM lis.testitem c WHERE b.itemno = c.itemno) as Print_Seq,
+
+to_date(rpad(to_char(a.COLLECTDATE,'yyyy/mm/dd'), 19, to_char(a.COLLECTtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as COLLECTDATE,
+to_date(rpad(to_char(a.RECEIVEDATE,'yyyy/mm/dd'), 19, to_char(a.RECEIVEtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as RECEIVE_DATE_TIME,
+to_date(rpad(to_char(a.TESTDATE,'yyyy/mm/dd'), 19, to_char(a.TESTtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as TESTDATE,
+to_date(rpad(to_char(a.OPERDATE,'yyyy/mm/dd'), 19, to_char(a.OPERtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as OPERDATE,
+to_date(rpad(to_char(a.CHECKDATE,'yyyy/mm/dd'), 19, to_char(a.CHECKtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as Report_Date,
+to_date(rpad(to_char(a.INCEPTDATE,'yyyy/mm/dd'), 19, to_char(a.INCEPTtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as INCEPTDATE,
+to_date(rpad(to_char(a.ONLINEDATE,'yyyy/mm/dd'), 19, to_char(a.ONLINEtime,' HH24:MI:SS')),'yyyy/MM/DD HH24:MI:SS') as ONLINEDATE,
+a.HISDATETIME as HISDATETIME,
+a.FENZHUDATETIME as FENZHUDATETIME,
+a.NURSESENDTIME as NURSESENDTIME,
+a.FINALSENDDATETIME as FINALSENDDATETIME,
+a.PRINTDATETIME as PRINTDATETIME,
+(select orderno from lis.testitem c where c.itemNo = b.parItemNO) as Charge_Item_Code,
+a.zdy16 as Culture_Begin_Date,
+a.zdy17 as Culture_End_Date,
+a.zdy18 as Culture_Duration,
+a.testtime as Culture_Result_Date
+FROM lis.ReportForm a
+LEFT JOIN  lis.ReportItem b ON b.RECEIVEDATE = a.RECEIVEDATE
+           AND b.SECTIONNO = a.SECTIONNO 
+           AND b.TESTTYPENO = a.TESTTYPENO 
+           AND b.SAMPLENO = a.SAMPLENO
+where a.RECEIVEDATE >= to_date('2018-05-01','yyyy-mm-dd')
+and a.RECEIVEDATE < to_date('2018-08-01','yyyy-mm-dd')
+
+
+
+
+
+
+=============================以下旧版======================================
+
+SELECT 
   '' as Key_ID,
  '' as MI_Code,
 a.SampleNo as Test_Report_No,
