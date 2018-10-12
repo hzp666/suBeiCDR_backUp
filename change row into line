@@ -1,0 +1,56 @@
+select  newid() as DATA_ID, *	 from (SELECT  a.ORGAN_NAME, a.DPT_CODE,a.DPT_NAME,a.STAT_DATE,a.COST_TYPE,
+												
+												[1]     as COST_01	,	
+												[2]     as COST_02	,	
+												[3]     as COST_03	,	
+												[28]      as COST_04	,	
+												[16]      as COST_05	,	
+												[90]      as COST_06	,	
+												[9]	 as COST_07	,	
+												[20]	     as COST_08	,	
+												[43]      as COST_09	,	
+												[33]      as COST_10	,	
+												[100]      as COST_11	,	
+												[10]      as COST_12	,	
+												[30]      as COST_13	,	
+												[42]      as COST_14	,	
+												[24]      as COST_15	,	
+												[25]      as COST_16	,	
+												[110]      as COST_17	,	
+												[40]      as COST_18	,	
+												[32]      as COST_19	,	
+												[120]      as COST_20	,	
+												[15]      as COST_21	,	
+												[7]      as COST_22	,	
+												[11]   		as COST_23	,	
+												[5]      as COST_24	,	
+												[130]   		as COST_98	,	
+												[80]   as COST_99	
+										FROM    (SELECT   '江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
+															CHARGE_DEPT_CODE	as	DPT_CODE	,	/*	科室编码	*/
+															CHARGE_DEPT_Name	as	DPT_NAME	,	/*	科室名称	*/
+															case when isnull( Charge_Date, '') = '' then   convert(date, Refund_Date) else  convert(date, Charge_Date) end	as	STAT_DATE	,	/*	统计日期	*/
+															'3'as	COST_TYPE	,Receivable_Fee,[Fee_Categ_Code]
+												FROM FM_InHospital_Fee_Detail where Receivable_Fee not like '-%') a PIVOT( sum(Receivable_Fee) FOR [Fee_Categ_Code] IN ( [1], [2], [3],[28],[16],[90],[9],[20],[43],[33],[100],[10],[30],[42],[24],[25],[110],[40],[32],[120],[15],[7],[11],[5],[130],[80] ) ) a) a
+  left join 
+  
+  (SELECT ORGAN_CODE,ORGAN_NAME,DPT_CODE,DPT_NAME,STAT_DATE,COST_type,sum(TOTAL_COST) TOTAL_COST,sum(IND_PAY) IND_PAY,sum(COST_06)COST_06,sum(COST_08)COST_08 FROM  (select									
+			
+			 '321002468830683'	as	ORGAN_CODE	,	/*	医院编码	*/
+			 '江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
+			a.CHARGE_DEPT_CODE	as	DPT_CODE	,	/*	科室编码	*/
+			a.CHARGE_DEPT_Name	as	DPT_NAME	,	/*	科室名称	*/
+		case when isnull( Charge_Date, '') = '' then   convert(date, Refund_Date) else  convert(date, Charge_Date) end	as	STAT_DATE	,
+			'3'as	COST_TYPE	,	/*	门诊/急诊/住院标识	*/
+			c.Total_Fee	as	TOTAL_COST	,	/*	总收入	*/
+			a.Receivable_Fee	as	IND_PAY	,	/*	病人自付金额	*/
+
+				(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code = '2010' then a.Receivable_Fee else null end)	as	COST_06	,	/*	超声费	*/
+			(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code ='2053'then a.Receivable_Fee else null end)	as	COST_08		/*	放射费	*/
+	
+from FM_InHospital_Fee_Detail (nolock) a									
+inner join cdr.[dbo].[FM_Inhospital_Settlement_Fee](nolock) C on a.INHOSP_NO = c.INHOSP_NO									
+where c.TOTAL_FEE not like '-%'
+and Receivable_Fee not like '-%') A
+
+group by   ORGAN_CODE,ORGAN_NAME,DPT_CODE,DPT_NAME,STAT_DATE,COST_type)b  on a.DPT_CODE=b.DPT_CODE and a.STAT_DATE=b.STAT_DATE
