@@ -32,7 +32,7 @@ select * from his_sb.sblocal_lis_barcode_print
 --his职工字典
 SELECT * FROM his_sb.com_employee WHERE empl_name = '高小坤';
 --emr职工字典与his职工字典对照
-SELECT * FROM his_sb.org_employee 
+SELECT * FROM his_sb.org_employee  /* ID是emr 员工编码  EMPL_CODE 是his员工编码*/
 --医疗组
 SELECT * FROM his_sb.met_ipm_medicalteam WHERE medical_team_code = '00000183'
 --his科室字典
