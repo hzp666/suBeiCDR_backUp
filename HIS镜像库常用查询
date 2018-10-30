@@ -118,3 +118,18 @@ select * from emr_sb.rcd_out_record_data;
 select * from his_sb.met_bld_apply
 --血液出库
 select * from his_sb.met_bld_output
+
+/*----------------------------- 住院、诊断 关联   ---------------------------------------------------*/
+from his_sb.FIN_IPR_INMAININFO    i, --住院主表
+       emr_sb.org_department        o, --组织机构表
+       emr_sb.DIAG_CREATION         b, --开立诊断
+       emr_sb.DIAG_DIAGNOSE         c, --诊断
+       emr_sb.DIAG_WESTERN_DIAGNOSE d, --西医诊断
+       emr_sb.dxt_western_disease   e -- 西医疾病
+ where i.emr_inpatientid = b.visit_id
+   and b.diagnose_dept_id = o.id
+   and b.id = c.diag_creation_id
+   and c.id = d.id
+   and d.disease_id = e.id
+   and b.visit_type = 1 --住院
+   and c.valid_state = '1' --取有效诊断             /*住院诊断记录*/
