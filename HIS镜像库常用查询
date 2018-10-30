@@ -39,7 +39,7 @@ SELECT * FROM his_sb.met_ipm_medicalteam WHERE medical_team_code = '00000183'
 SELECT * FROM his_sb.com_department WHERE dept_code = '2053'
 --emr科室字典与his科室字典对照
 SELECT * FROM his_sb.org_department 
-WHERE ID = '5358102'
+WHERE ID = '5358102'   /* id 是emr 科室编码，dept_code 是his科室编码*/
 --所有字典所在的表
 SELECT * FROM his_sb.com_dictionary WHERE TYPE = 'NurseSort'
 --手术字典表
