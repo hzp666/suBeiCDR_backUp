@@ -1,0 +1,101 @@
+USE [CDR]
+GO
+/****** Object:  StoredProcedure [dbo].[Proc_PA_Diag_Info]    Script Date: 2018-11-12 9:42:17 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER proc [dbo].[Proc_PA_Diag_Info](@id nvarchar(100))
+as 
+begin
+
+DELETE FROM [dbo].[PA_Diag_Info] WHERE Diag_No=@id
+
+declare @sql_1 nvarchar(max),@sql nvarchar(max)
+
+set @sql = 'select * from openquery(his,'' 
+select
+null  as  Key_ID  , 
+null  as  MI_Code  ,
+null  as  MI_Name  ,
+null  as  EMPI_ID  ,
+decode(a.visit_type,''''1'''',(select x.inpatient_code from emr_sb.pt_inpatient_cure x where a.visit_id = x.id),null)  AS Inhosp_No    ,  
+decode(a.visit_type,''''2'''',(select x.outpatient_code from emr_sb.pt_outpatient_cure x where a.visit_id = x.id),null)  as Visit_No   , 
+decode(a.visit_type,''''1'''',(select y.card_no from emr_sb.pt_inpatient_cure x,his_sb.fin_ipr_inmaininfo y 
+              where a.visit_id = x.id and x.inpatient_code = y.inpatient_no)
+           ,''''2'''',(select y.card_no from emr_sb.pt_outpatient_cure x,his_sb.FIN_OPR_REGISTER y
+              where a.visit_id = x.id and x.outpatient_code = y.clinic_code and y.trans_type = ''''1'''')
+           ,null) as Visit_Card_No,
+NULL  as  Visit_Num  ,   
+c.id  as  Diag_No  , 
+null  as  Visit_Dept_Index_No  ,   
+a.DIAGNOSE_DEPT_ID  as  Visit_Dept_Code  ,
+a.DIAGNOSE_DEPT_NAME  as  Visit_Dept_Name  ,
+null  as  Visit_Dr_Index_No  ,   
+(select f.empl_code 
+from emr_sb.org_employee e , his_sb.com_employee f 
+where  e.empl_code = f.empl_code
+and a.user_id = e.id)  as  Visit_Dr_Code  ,   
+(select f.empl_name  
+from emr_sb.org_employee e ,
+ his_sb.com_employee f 
+where  e.empl_code = f.empl_code
+and a.user_id = e.id)  as  Visit_Dr_Name  ,   
+b.is_main_diagnose  as Main_Flag,
+a.DIAGNOSE_TYPE_CODE  as  Diag_Categ_Code  ,   
+a.DIAGNOSE_TYPE_NAME  as  Diag_Categ_Name  ,   
+c.DISEASE_ID  as  Diag_Code  ,   
+c.NAME as  Diag_Name  ,   
+d.ICD10_CODE  as  Diag_ICD10_Code  ,   
+d.name as  Diag_ICD10_Name  ,   
+null  as  Diag_Desc  ,   
+a.CREATE_TIEM  as  Diag_Date  ,   
+c.name  as  Diag_Result,
+decode(a.visit_type,''''1'''',(select x.inpatient_code from emr_sb.pt_inpatient_cure x where a.visit_id = x.id)
+				   ,''''2'''',(select x.outpatient_code from emr_sb.pt_outpatient_cure x where a.visit_id = x.id),null)  AS Encounter_ID     
+from 
+      emr_sb.DIAG_CREATION a,
+      emr_sb.DIAG_DIAGNOSE b,
+      emr_sb.diag_western_diagnose c,
+      emr_sb.dxt_western_disease d 
+ where  a.id = b.diag_creation_id
+       and b.id = c.id
+       and c.disease_id = d.id
+	   and b.valid_state = ''''1''''
+	   and c.id = '''''
++ isnull(@id,'')
++''''''')'
+
+insert into PA_Diag_Info(
+Key_ID  , 
+MI_Code  ,
+MI_Name  ,
+EMPI_ID  ,
+Inhosp_No    ,
+Visit_No   , 
+Visit_Card_No,  
+Visit_Num  ,   
+Diag_No  , 
+Visit_Dept_Index_No  ,   
+Visit_Dept_Code  ,
+Visit_Dept_Name  ,
+Visit_Dr_Index_No  ,   
+Visit_Dr_Code  ,   
+Visit_Dr_Name  ,   
+Main_Flag,
+Diag_Categ_Code  ,   
+Diag_Categ_Name  ,   
+Diag_Code  ,   
+Diag_Name  ,   
+Diag_ICD10_Code  ,   
+Diag_ICD10_Name  ,   
+Diag_Desc  ,   
+Diag_Date  ,   
+Diag_Result,
+Encounter_ID) exec(@sql)
+
+--exec Proc_PA_Diag_Info_Insert '18268698'
+end
+
+
