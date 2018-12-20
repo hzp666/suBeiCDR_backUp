@@ -239,41 +239,51 @@ a.COST_99
 
 
 
-select  newid() as DATA_ID,a.ORGAN_CODE,
-a.ORGAN_NAME,
-a.DPT_CODE  ,
-a.DPT_NAME  ,
-a.STAT_DATE ,
-a.COST_TYPE ,
-(isnull(b.IND_PAY,0)+isnull(a.COST_01,0)+isnull(a.COST_02,0)+isnull(a.COST_03,0)+isnull(a.COST_04,0)+isnull(a.COST_05,0)+isnull(a.COST_06,0)+isnull(a.COST_07,0)+isnull(a.COST_08,0)+isnull(a.COST_09,0)+isnull(a.COST_10,0)+isnull(a.COST_11,0)+isnull(a.COST_12,0)+isnull(a.COST_13,0)+isnull(a.COST_14,0)
-+isnull(a.COST_15,0)+isnull(a.COST_16,0)+isnull(a.COST_17,0)+isnull(a.COST_18,0)+isnull(a.COST_19,0)+isnull(a.COST_20,0)+isnull(a.COST_21,0)+isnull(a.COST_22,0)+isnull(a.COST_23,0)+isnull(a.COST_24,0)+isnull(a.COST_98,0)+isnull(a.COST_99,0)) as TOTAL_COST,
-b.IND_PAY   ,
-a.COST_01   ,
-a.COST_02   ,
-a.COST_03   ,
-a.COST_04   ,
-a.COST_05   ,
-a.COST_06   ,
-a.COST_07   ,
-a.COST_08   ,
-a.COST_09   ,
-a.COST_10   ,
-a.COST_11   ,
-a.COST_12   ,
-a.COST_13   ,
-a.COST_14   ,
-a.COST_15   ,
-a.COST_16   ,
-a.COST_17   ,
-a.COST_18   ,
-a.COST_19   ,
-a.COST_20   ,
-a.COST_21   ,
-a.COST_22   ,
-a.COST_23   ,
-a.COST_24   ,
-a.COST_98   ,
-a.COST_99   
+select  newid() as DATA_ID,
+ 
+ ORGAN_CODE  AS  ORGAN_CODE
+, ORGAN_NAME  AS  ORGAN_NAME
+, a.DPT_CODE  AS  DPT_CODE
+, DPT_NAME  AS  DPT_NAME
+, a.DPT_CODE  AS  ORI_DPT_CODE
+, DPT_NAME  AS  ORI_DPT_NAME
+, a.STAT_DATE  AS  STAT_DATE
+
+, (isnull(b.IND_PAY,0)+isnull(a.COST_01,0)+isnull(a.COST_02,0)+isnull(a.COST_03,0)+isnull(a.COST_04,0)+isnull(a.COST_05,0)+isnull(a.COST_06,0)+isnull(a.COST_07,0)+isnull(a.COST_08,0)+isnull(a.COST_09,0)+isnull(a.COST_10,0)+isnull(a.COST_11,0)+isnull(a.COST_12,0)+isnull(a.COST_13,0)+isnull(a.COST_14,0)
++isnull(a.COST_15,0)+isnull(a.COST_16,0)+isnull(a.COST_17,0)+isnull(a.COST_18,0)+isnull(a.COST_19,0)+isnull(a.COST_20,0)+isnull(a.COST_21,0)+isnull(a.COST_22,0)+isnull(a.COST_23,0)+isnull(a.COST_24,0)+isnull(a.COST_98,0)+isnull(a.COST_99,0)) as TOTAL_COST
+, IND_PAY  AS  IND_PAY
+,  isnull( COST_07,0)+isnull(COST_19,0)+isnull(COST_12,0 )
++isnull(COST_13,0 )+isnull(COST_21,0 )+isnull(COST_16,0 )+isnull(COST_04,0 )
++isnull(COST_01,0)+isnull(COST_02,0)+isnull(COST_03,0)+isnull(COST_99 ,0) AS  COST_01
+, COST_07  AS  COST_01_01
+, COST_19  AS  COST_01_03
+, COST_12  AS  COST_01_04
+, COST_13  AS  COST_01_05
+, COST_21  AS  COST_01_06
+, COST_16  AS  COST_01_07
+, COST_04  AS  COST_01_09
+,isnull(COST_01,0)+isnull(COST_02,0)+isnull(COST_03,0)  as   COST_01_10
+, COST_01  AS  COST_01_10_01
+, COST_02  AS  COST_01_10_02
+, COST_03  AS  COST_01_10_03
+, null   AS  COST_11
+, COST_99  AS  COST_99
+
+
+,0  as COST_02
+,0  as COST_02_02
+,0  as COST_02_03
+,0  as COST_02_04
+,0  as COST_02_05
+,0  as COST_02_06
+,0  as COST_02_07
+,0  as COST_02_08
+,0  as COST_02_10
+,0  as COST_02_10_01
+,0  as COST_02_10_02
+,0  as COST_02_10_03
+,0  as COST_02_11
+,0  as COST_02_99
 
 	 from (SELECT  a.ORGAN_CODE,a.ORGAN_NAME, a.DPT_CODE,a.DPT_NAME,a.STAT_DATE,a.COST_TYPE,
 												
@@ -302,7 +312,7 @@ a.COST_99
 												[11]   		as COST_23	,	
 												[5]      as COST_24	,	
 												[130]   		as COST_98	,	
-												[80]   as COST_99	
+									 			[80]   as COST_99	
 										FROM    (SELECT   	'321002468830683'	as	ORGAN_CODE	,	/*	医院编码	*/
 															'江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
 															Visit_Dept_Code	as	DPT_CODE	,	/*	科室编码	*/
@@ -312,33 +322,28 @@ a.COST_99
 												FROM cdr.dbo.FM_Outhospital_Fee_Detail(nolock) where Receivable_Fee not like '-%' and (Charge_Date is not null or Refund_Date is not null)) a PIVOT( sum(Receivable_Fee) FOR [Fee_Categ_Code] IN ( [1], [2], [3],[28],[16],[90],[9],[20],[43],[33],[100],[10],[30],[42],[24],[25],[110],[40],[32],[120],[15],[7],[11],[5],[130],[80] ) ) a) a
   left join 
   
-			  (SELECT DPT_CODE, STAT_DATE,
-			   --sum(TOTAL_COST) TOTAL_COST,
-			   sum(IND_PAY) IND_PAY,sum(COST_06)COST_06,sum(COST_08)COST_08 FROM  (select									
-						
-						 '321002468830683'	as	ORGAN_CODE	,	/*	医院编码	*/
-						 '江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
-						a.Visit_Dept_Code	as	DPT_CODE	,	/*	科室编码	*/
-						a.Visit_Dept_Name	as	DPT_NAME	,	/*	科室名称	*/
+  (SELECT DPT_CODE, STAT_DATE, /*sum(TOTAL_COST) TOTAL_COST,*/sum(IND_PAY) IND_PAY,sum(COST_06)COST_06,sum(COST_08)COST_08 FROM  (select									
+			
+			 '321002468830683'	as	ORGAN_CODE	,	/*	医院编码	*/
+			 '江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
+			a.Visit_Dept_Code	as	DPT_CODE	,	/*	科室编码	*/
+			a.Visit_Dept_Name	as	DPT_NAME	,	/*	科室名称	*/
 
-					case when isnull( Charge_Date, '') = '' then   convert(date, Refund_Date) else  convert(date, Charge_Date) end	as	STAT_DATE	,
-						'3'as	COST_TYPE	,	/*	门诊/急诊/住院标识	*/
-						--c.Total_Fee	as	TOTAL_COST	,	/*	总收入	*/
-						a.Receivable_Fee	as	IND_PAY	,	/*	病人自付金额	*/
+		case when isnull( Charge_Date, '') = '' then   convert(date, Refund_Date) else  convert(date, Charge_Date) end	as	STAT_DATE	,
+			'3'as	COST_TYPE	,	/*	门诊/急诊/住院标识	*/
+			/*c.Total_Fee	as	TOTAL_COST	,	/*	总收入	*/*/
+			a.Receivable_Fee	as	IND_PAY	,	/*	病人自付金额	*/
 
-							(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code = '2010' then a.Receivable_Fee else null end)	as	COST_06	,	/*	超声费	*/
-						(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code ='2053'then a.Receivable_Fee else null end)	as	COST_08		/*	放射费	*/
-				
-			from cdr.dbo.FM_Outhospital_Fee_Detail (nolock) a									
-			inner join cdr.[dbo].FM_Outhospital_Settlement_Fee(nolock) C on a.visit_no = c.visit_no									
-			where c.TOTAL_FEE not like '-%'
-			and isnull(c.TOTAL_FEE,0) != 0
-			and c.TOTAL_FEE is not null
-			and Receivable_Fee not like '-%') A
+				(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code = '2010' then a.Receivable_Fee else null end)	as	COST_06	,	/*	超声费	*/
+			(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code ='2053'then a.Receivable_Fee else null end)	as	COST_08		/*	放射费	*/
+	
+from cdr.dbo.FM_Outhospital_Fee_Detail (nolock) a									
+inner join cdr.[dbo].FM_Outhospital_Settlement_Fee(nolock) C on a.visit_no = c.visit_no									
+where c.TOTAL_FEE not like '-%'
+and isnull(c.total_fee,0) != 0
+and Receivable_Fee not like '-%') A
 
-			group by   ORGAN_CODE,ORGAN_NAME,DPT_CODE,DPT_NAME,STAT_DATE,COST_type) b  
-
-on a.DPT_CODE=b.DPT_CODE and a.STAT_DATE=b.STAT_DATE
+group by   ORGAN_CODE,ORGAN_NAME,DPT_CODE,DPT_NAME,STAT_DATE,COST_type)b  on a.DPT_CODE=b.DPT_CODE and a.STAT_DATE=b.STAT_DATE
 
 
 
@@ -349,41 +354,51 @@ union all
 
 
 
-select  newid() as DATA_ID, a.ORGAN_CODE,
-a.ORGAN_NAME,
-a.DPT_CODE  ,
-a.DPT_NAME  ,
-a.STAT_DATE ,
-a.COST_TYPE ,
-(isnull(b.IND_PAY,0)+isnull(a.COST_01,0)+isnull(a.COST_02,0)+isnull(a.COST_03,0)+isnull(a.COST_04,0)+isnull(a.COST_05,0)+isnull(a.COST_06,0)+isnull(a.COST_07,0)+isnull(a.COST_08,0)+isnull(a.COST_09,0)+isnull(a.COST_10,0)+isnull(a.COST_11,0)+isnull(a.COST_12,0)+isnull(a.COST_13,0)+isnull(a.COST_14,0)
-+isnull(a.COST_15,0)+isnull(a.COST_16,0)+isnull(a.COST_17,0)+isnull(a.COST_18,0)+isnull(a.COST_19,0)+isnull(a.COST_20,0)+isnull(a.COST_21,0)+isnull(a.COST_22,0)+isnull(a.COST_23,0)+isnull(a.COST_24,0)+isnull(a.COST_98,0)+isnull(a.COST_99,0)) as TOTAL_COST,
-b.IND_PAY   ,
-a.COST_01   ,
-a.COST_02   ,
-a.COST_03   ,
-a.COST_04   ,
-a.COST_05   ,
-a.COST_06   ,
-a.COST_07   ,
-a.COST_08   ,
-a.COST_09   ,
-a.COST_10   ,
-a.COST_11   ,
-a.COST_12   ,
-a.COST_13   ,
-a.COST_14   ,
-a.COST_15   ,
-a.COST_16   ,
-a.COST_17   ,
-a.COST_18   ,
-a.COST_19   ,
-a.COST_20   ,
-a.COST_21   ,
-a.COST_22   ,
-a.COST_23   ,
-a.COST_24   ,
-a.COST_98   ,
-a.COST_99  
+select  newid() as DATA_ID
+, a.ORGAN_CODE  AS  ORGAN_CODE
+, ORGAN_NAME  AS  ORGAN_NAME
+, a.DPT_CODE  AS  DPT_CODE
+, DPT_NAME  AS  DPT_NAME
+,a. DPT_CODE  AS  ORI_DPT_CODE
+, DPT_NAME  AS  ORI_DPT_NAME
+, a.STAT_DATE  AS  STAT_DATE
+
+, (isnull(b.IND_PAY,0)+isnull(a.COST_01,0)+isnull(a.COST_02,0)+isnull(a.COST_03,0)+isnull(a.COST_04,0)+isnull(a.COST_05,0)+isnull(a.COST_06,0)+isnull(a.COST_07,0)+isnull(a.COST_08,0)+isnull(a.COST_09,0)+isnull(a.COST_10,0)+isnull(a.COST_11,0)+isnull(a.COST_12,0)+isnull(a.COST_13,0)+isnull(a.COST_14,0)
++isnull(a.COST_15,0)+isnull(a.COST_16,0)+isnull(a.COST_17,0)+isnull(a.COST_18,0)+isnull(a.COST_19,0)+isnull(a.COST_20,0)+isnull(a.COST_21,0)+isnull(a.COST_22,0)+isnull(a.COST_23,0)+isnull(a.COST_24,0)+isnull(a.COST_98,0)+isnull(a.COST_99,0)) as TOTAL_COST
+, IND_PAY  AS  IND_PAY
+
+,0  as COST_01
+,0  as COST_01_01
+,0  as COST_01_03
+,0  as COST_01_04
+,0  as COST_01_05
+,0  as COST_01_06
+,0  as COST_01_07
+,0  as COST_01_09
+,0  as COST_01_10
+,0  as COST_01_10_01
+,0  as COST_01_10_02
+,0  as COST_01_10_03
+,0  as COST_11
+,0  as COST_99
+
+
+,  isnull( COST_09,0)+isnull(COST_19,0)+isnull(COST_12,0 )
++isnull(COST_13,0 )+isnull(COST_21,0 )+isnull(COST_16,0 )+isnull(COST_10,0 )
++isnull(COST_01,0)+isnull(COST_02,0)+isnull(COST_03,0)+isnull(COST_99,0)   AS  COST_02
+, COST_09  AS  COST_02_02
+, COST_19  AS  COST_02_03
+, COST_12  AS  COST_02_04
+, COST_13  AS  COST_02_05
+,COST_21 AS  COST_02_06
+, COST_16  AS  COST_02_07
+, COST_10  AS  COST_02_08
+,isnull(COST_01,0)+isnull(COST_02,0)+isnull(COST_03,0) AS  COST_02_10
+, COST_01  AS  COST_02_10_01
+, COST_02  AS  COST_02_10_02
+, COST_03  AS  COST_02_10_03
+, null  AS  COST_02_11
+, COST_99  AS  COST_02_99
 	 from (SELECT  a.ORGAN_CODE,a.ORGAN_NAME, a.DPT_CODE,a.DPT_NAME,a.STAT_DATE,a.COST_TYPE,
 												
 												[1]       as COST_01	,	
@@ -421,31 +436,27 @@ a.COST_99
 												FROM cdr.dbo.FM_InHospital_Fee_Detail(nolock) where Receivable_Fee not like '-%' and  (Charge_Date is not null or Refund_Date is not null)) a PIVOT( sum(Receivable_Fee) FOR [Fee_Categ_Code] IN ( [1], [2], [3],[28],[16],[90],[9],[20],[43],[33],[100],[10],[30],[42],[24],[25],[110],[40],[32],[120],[15],[7],[11],[5],[130],[80] ) ) a) a
   left join 
   
-				  (SELECT DPT_CODE,STAT_DATE,
-				  --sum(TOTAL_COST) TOTAL_COST,
-				  sum(IND_PAY) IND_PAY,sum(COST_06)COST_06,sum(COST_08)COST_08 FROM  (select									
-							
-							 '321002468830683'	as	ORGAN_CODE	,	/*	医院编码	*/
-							 '江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
-							a.CHARGE_DEPT_CODE	as	DPT_CODE	,	/*	科室编码	*/
-							a.CHARGE_DEPT_Name	as	DPT_NAME	,	/*	科室名称	*/
-						case when isnull( Charge_Date, '') = '' then   convert(date, Refund_Date) else  convert(date, Charge_Date) end	as	STAT_DATE	,
-							'3'as	COST_TYPE	,	/*	门诊/急诊/住院标识	*/
-							--c.Total_Fee	as	TOTAL_COST	,	/*	总收入	*/
-							a.Receivable_Fee	as	IND_PAY	,	/*	病人自付金额	*/
+  (SELECT DPT_CODE,STAT_DATE,/*sum(TOTAL_COST) TOTAL_COST,*/sum(IND_PAY) IND_PAY,sum(COST_06)COST_06,sum(COST_08)COST_08 FROM  (select									
+			
+			 '321002468830683'	as	ORGAN_CODE	,	/*	医院编码	*/
+			 '江苏省苏北人民医院'	as	ORGAN_NAME	,	/*	医院名称	*/
+			a.CHARGE_DEPT_CODE	as	DPT_CODE	,	/*	科室编码	*/
+			a.CHARGE_DEPT_Name	as	DPT_NAME	,	/*	科室名称	*/
+		case when isnull( Charge_Date, '') = '' then   convert(date, Refund_Date) else  convert(date, Charge_Date) end	as	STAT_DATE	,
+			'3'as	COST_TYPE	,	/*	门诊/急诊/住院标识	*/
+			/*c.Total_Fee	as	TOTAL_COST	,	/*	总收入	*/*/
+			a.Receivable_Fee	as	IND_PAY	,	/*	病人自付金额	*/
 
-								(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code = '2010' then a.Receivable_Fee else null end)	as	COST_06	,	/*	超声费	*/
-							(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code ='2053'then a.Receivable_Fee else null end)	as	COST_08		/*	放射费	*/
-					
-				from cdr.dbo.FM_InHospital_Fee_Detail(nolock) a									
-				inner join cdr.[dbo].[FM_Inhospital_Settlement_Fee](nolock) C on a.INHOSP_NO = c.INHOSP_NO									
-				where c.TOTAL_FEE not like '-%'
-				and isnull(c.TOTAL_FEE,0) != 0
-				and c.TOTAL_FEE is not null
-				and Receivable_Fee not like '-%') A
+				(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code = '2010' then a.Receivable_Fee else null end)	as	COST_06	,	/*	超声费	*/
+			(case when a.drug_flag = '0' and a.fee_categ_code <> '28' and a.exec_dept_code ='2053'then a.Receivable_Fee else null end)	as	COST_08		/*	放射费	*/
+	
+from cdr.dbo.FM_InHospital_Fee_Detail(nolock) a									
+inner join cdr.[dbo].[FM_Inhospital_Settlement_Fee](nolock) C on a.INHOSP_NO = c.INHOSP_NO									
+where c.TOTAL_FEE not like '-%'
+and isnull(c.total_fee,0) = 0
+and Receivable_Fee not like '-%') A
 
-				group by   ORGAN_CODE,ORGAN_NAME,DPT_CODE,DPT_NAME,STAT_DATE,COST_type) b 
- on a.DPT_CODE=b.DPT_CODE and a.STAT_DATE=b.STAT_DATE
+group by   ORGAN_CODE,ORGAN_NAME,DPT_CODE,DPT_NAME,STAT_DATE,COST_type)b  on a.DPT_CODE=b.DPT_CODE and a.STAT_DATE=b.STAT_DATE
 
 
 --where COST_01	not like '-%'
@@ -474,3 +485,4 @@ a.COST_99
 --and COST_24	not like '-%'
 --and COST_98	not like '-%'
 --and COST_99	not like '-%'
+
