@@ -1,0 +1,115 @@
+病案首页 数据对照 sql：
+
+第一部分：  非费用：
+CDR中：
+  SELECT format(OUT_HP_DT ,'yyyyMM'),count(*)
+  FROM [shengPingTai].[dbo].[FirstPageMedicalRecord_NoFee]
+  where OUT_HP_DT  > '2018-01-01'
+  group by format(OUT_HP_DT ,'yyyyMM')
+  order by format(OUT_HP_DT ,'yyyyMM')
+  
+  -------------------------------------------------------
+  
+  Hismirror:
+  
+  with cte1 
+as
+(
+select a.inpatient_no,a.diag_code2,a.diag_name2,a.in_condition_flag,a.out_situation
+  ,row_number() over(PARTITION BY a.inpatient_no ORDER BY a.sequence_no) as Rank1
+  from his_sb.met_mrs_base_diagnose a
+  where diag_kind = '2'
+)
+select 
+count(*),to_char(a.out_time,'yyyy-mm')
+from his_sb.met_mrs_base a
+inner join his_sb.fin_ipr_inmaininfo b on a.inpatient_no = b.inpatient_no
+inner join his_sb.com_patientinfo c on b.card_no = c.card_no
+left join cte1 aaa on a.inpatient_no = aaa.inpatient_no and aaa.rank1 = 1
+left join cte1 bbb on a.inpatient_no = bbb.inpatient_no and bbb.rank1 = 2
+left join cte1 ccc on a.inpatient_no = ccc.inpatient_no and ccc.rank1 = 3
+left join cte1 ddd on a.inpatient_no = ddd.inpatient_no and ddd.rank1 = 4
+left join cte1 eee on a.inpatient_no = eee.inpatient_no and eee.rank1 = 5
+left join cte1 fff on a.inpatient_no = fff.inpatient_no and fff.rank1 = 6
+left join cte1 ggg on a.inpatient_no = ggg.inpatient_no and ggg.rank1 = 7
+left join cte1 hhh on a.inpatient_no = hhh.inpatient_no and hhh.rank1 = 8
+left join cte1 iii on a.inpatient_no = iii.inpatient_no and iii.rank1 = 9
+where a.RECORD_STATUS = '6' /*and nvl(b.ext_flag2,'0') <> '1'*/
+and a.out_time >= to_date('2018-01-01','yyyy-mm-dd')
+--and a.out_time < to_date('2018-10-01','yyyy-mm-dd')
+group by to_char(a.out_time,'yyyy-mm')
+order by to_char(a.out_time,'yyyy-mm')
+
+===============================================================================
+
+第二部分：费用部分：
+CDR中：
+
+SELECT format(FEE_DATE,'yyyyMM'),count(*)
+  FROM [shengPingTai].[dbo].[mrs_patient_fee]
+  where FEE_DATE > '2018-01-01'
+  group by format(FEE_DATE,'yyyyMM')
+  order by format(FEE_DATE,'yyyyMM')
+  
+  --------------------------------------------------------
+  
+  Hismirror:
+  
+  SELECT count(*), to_char(FEE_DATE,'yyyy-mm')
+FROM(
+select a.inpatient_no,
+               (select c.contrast_code_xy
+                  from his_sb.met_mrs_contrast_fee c
+                 where c.fee_code = a.item_code and c.type='0') fee_code,
+               a.tot_cost,
+               a.pay_cost,
+               a.own_cost,
+               a.Fee_Date
+          from his_sb.vi_fin_ipb_itemlist a
+                    
+/*where a.fee_code not in ('28')*/
+where a.fee_code <> '28'
+and a.FEE_DATE >= to_date('2018-01-01','yyyy-mm-dd')
+        union all
+        select a.inpatient_no,
+               (select c.contrast_code_xy
+                  from his_sb.met_mrs_contrast_fee c
+                 where c.fee_code = a.drug_code and c.type='1') fee_code,
+               a.tot_cost,
+               a.pay_cost,
+               a.own_cost,
+               a.Fee_Date
+          from his_sb.vi_fin_ipb_medicinelist a
+          where  a.FEE_DATE >= to_date('2018-01-01','yyyy-mm-dd')
+union all
+select a.inpatient_no,
+               'F090100' fee_code, 
+               a.tot_cost,
+               a.pay_cost,
+               a.own_cost,
+               a.Fee_Date
+          from his_sb.vi_fin_ipb_itemlist a
+where /*a.fee_code  in ('28')*/a.fee_code ='28'  and  a.FEE_DATE >= to_date('2018-01-01','yyyy-mm-dd') and a.execute_deptcode in (select d.dept_code from his_sb.com_department d where d.dept_type = 'T')
+union all
+select a.inpatient_no,
+               'F090300' fee_code, 
+               a.tot_cost,
+               a.pay_cost,
+               a.own_cost,
+               a.Fee_Date
+          from his_sb.vi_fin_ipb_itemlist a
+where /*a.fee_code  in ('28')*/a.fee_code ='28' and  a.FEE_DATE >= to_date('2018-01-01','yyyy-mm-dd') and a.execute_deptcode in (select d.dept_code from his_sb.com_department d where d.dept_type = 'OP')
+union all
+select a.inpatient_no,
+               'F090200' fee_code, 
+               a.tot_cost,
+               a.pay_cost,
+               a.own_cost,
+               a.Fee_Date
+          from his_sb.vi_fin_ipb_itemlist a
+where /*a.fee_code  in ('28')*/a.fee_code ='28' and  a.FEE_DATE >= to_date('2018-01-01','yyyy-mm-dd') and a.execute_deptcode in (select d.dept_code from his_sb.com_department d where d.dept_type not in('OP','T'))) t
+where FEE_DATE >= to_date('2018-01-01','yyyy-mm-dd')
+--and FEE_DATE < to_date('2018-12-01','yyyy-mm-dd')
+group by to_char(FEE_DATE,'yyyy-mm')
+order by to_char(FEE_DATE,'yyyy-mm')
+
