@@ -1,0 +1,120 @@
+select ward_name
+       ,aa.输血及时数
+       ,aa.输血总次数
+       ,case when nvl(aa.输血总次数,0) = 0 then null else round(aa.输血及时数/aa.输血总次数,4) end as 输血及时率
+       ,aa.悬浮少白细胞红细胞合格数
+       ,aa.悬浮少白细胞红细胞总数
+       ,case when nvl(aa.悬浮少白细胞红细胞总数,0) = 0 then null else round(aa.悬浮少白细胞红细胞合格数/aa.悬浮少白细胞红细胞总数,4) end as 悬浮少白细胞红细胞合格率
+       ,aa.冷沉淀凝血因子合格数
+       ,aa.冷沉淀凝血因子总数
+       ,case when nvl(aa.冷沉淀凝血因子总数,0) = 0 then null else round(aa.冷沉淀凝血因子合格数/aa.冷沉淀凝血因子总数,4) end as 冷沉淀凝血因子合格率
+       ,aa.病毒灭活冰冻血浆合格数
+       ,aa.病毒灭活冰冻血浆总数
+       ,case when nvl(aa.病毒灭活冰冻血浆总数,0) = 0 then null else round(aa.病毒灭活冰冻血浆合格数/aa.病毒灭活冰冻血浆总数,4) end as 病毒灭活冰冻血浆合格率
+       ,aa.单采血小板合格数
+       ,aa.单采血小板总数
+       ,case when nvl(aa.单采血小板总数,0) = 0 then null else round(aa.单采血小板合格数/aa.单采血小板总数,4) end as 单采血小板合格率
+       ,aa.废弃血袋合格数
+       ,case when nvl(aa.输血总次数,0) = 0 then null else round(aa.废弃血袋合格数/aa.输血总次数,4) end as 废弃血袋合格率
+from 
+(
+select
+ t.ward_code,
+ t.ward_name,
+ sum(case
+       when (t.kszxr_time - t.first_check_time) * 24 * 60 <= 30 then
+        1
+       else
+        0
+     end) as 输血及时数,
+ count(t.bar_code) as 输血总次数,
+ sum(case
+       when (t.blood_type_name = '悬浮少白细胞红细胞') and
+            (((select max(p.record_time)
+                 from hl.mcs_transf_blood_process p
+                where p.form_id = t.id
+                  and p.process_name = '结束输血') - t.kszxr_time) * 24 <= 1.5) then
+        1
+       else
+        0
+     end) as 悬浮少白细胞红细胞合格数,
+ sum(case
+       when (t.blood_type_name = '悬浮少白细胞红细胞') then
+        1
+       else
+        0
+     end) as 悬浮少白细胞红细胞总数,
+ 
+ sum(case
+       when (t.blood_type_name = '冷沉淀凝血因子') and
+            (((select max(p.record_time)
+                 from hl.mcs_transf_blood_process p
+                where p.form_id = t.id
+                  and p.process_name = '结束输血') - t.kszxr_time) * 24 * 60 <= 45) then
+        1
+       else
+        0
+     end) as 冷沉淀凝血因子合格数,
+ sum(case
+       when (t.blood_type_name = '冷沉淀凝血因子') then
+        1
+       else
+        0
+     end) as 冷沉淀凝血因子总数,
+ 
+ sum(case
+       when (t.blood_type_name = '病毒灭活冰冻血浆') and
+            (((select max(p.record_time)
+                 from hl.mcs_transf_blood_process p
+                where p.form_id = t.id
+                  and p.process_name = '结束输血') - t.kszxr_time) * 24 * 60 <= 45) then
+        1
+       else
+        0
+     end) as 病毒灭活冰冻血浆合格数,
+ sum(case
+       when (t.blood_type_name = '病毒灭活冰冻血浆') then
+        1
+       else
+        0
+     end) as 病毒灭活冰冻血浆总数,
+ 
+ sum(case
+       when (t.blood_type_name = '单采血小板') and
+            (((select max(p.record_time)
+                 from hl.mcs_transf_blood_process p
+                where p.form_id = t.id
+                  and p.process_name = '结束输血') - t.kszxr_time) * 24 * 60 <= 45) then
+        1
+       else
+        0
+     end) as 单采血小板合格数,
+ sum(case
+       when (t.blood_type_name = '单采血小板') then
+        1
+       else
+        0
+     end) as 单采血小板总数,
+ 
+ sum(case
+       when ((select max(p.record_time)
+                from hl.mcs_transf_blood_process p
+               where p.form_id = t.id
+                 and p.process_name = '废弃输血') -
+            (select p.record_time
+                from hl.mcs_transf_blood_process p
+               where p.form_id = t.id
+                 and p.process_name = '结束输血')) * 24 >= 24 then
+        1
+       else
+        0
+     end) as 废弃血袋合格数
+
+  from hl.mcs_transf_blood t
+ where 1 = 1
+   ${if(len(ward_Name) == 0,""," and t.ward_name = '" + ward_Name + "'")}     
+   and t.order_time >= to_date('${begin_Date}','yyyy-mm-dd hh24:mi:ss')
+   and t.order_time < to_date('${end_Date}','yyyy-mm-dd hh24:mi:ss')+1
+ group by t.ward_code, t.ward_name 
+) aa
+order by aa.ward_name asc
