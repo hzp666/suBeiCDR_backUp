@@ -1,0 +1,31 @@
+select  cast( '321002468830683' as varchar(50)) as MI_Code, 
+cast( '苏北人民医院' as varchar(100)) as MI_Name, 
+cast( ITEM_CODE as varchar(20)) as Charge_Item_Code, 
+cast( ITEM_NAME as varchar(50)) as Charge_Item_Name,
+cast( '' as varchar(100)) as Print_Id,
+cast( GB_CODE as varchar(100)) as Ref_Id, /*国家物价统一编码*/
+cast(spell_code as varchar(100)) as Py,
+cast(wb_code as varchar(100)) as Wb, 
+cast( SPECS as varchar(100)) as Spec, 
+cast( MARK as varchar(100)) as Description, 
+cast( '' as varchar(100)) as Unit_Id, 
+cast( STOCK_UNIT as varchar(100)) as Unit_Name, 
+cast( UNIT_PRICE as varchar(100)) as Price, 
+cast( EMERG_SCALE as varchar(100)) as Upper_Price,/*急诊加成比例*/
+cast( '' as varchar(100)) as Acc_Item_Id, 
+cast(fee_code as varchar(100)) as Item_Kind_Id, 
+cast( OPER_DATE as date) as Enable_Date, 
+cast( '' as date) as Disable_Date, 
+cast( case when VALID_STATE<>'1' then 1 else 0 end as varchar(100)) as Disable_Flag, 
+cast( CONFIRM_FLAG as varchar(100)) as Confirm_Flag, 
+cast( SPECIAL_FLAG2 as varchar(100)) as OPPartial_Self_Flag,/*自费项目 0假 1真*/
+cast( SPECIAL_FLAG2 as varchar(100)) as IPPartial_Self_Flag, /*自费项目 0假 1真*/
+cast(oper_code as varchar(100)) as Staff_Id, 
+cast(oper_date as date) as Modified_Date, 
+cast(mark as varchar(100)) as Memo, 
+cast( '' as varchar(100)) as Special_Note, 
+cast(spell_code as varchar(100)) as Full_Pronunciation,
+a.sys_class as class_Code,
+case when exists(select 1 from his_sb.FIN_COM_UNDRUGZTINFO b where b.package_code = a.item_code) then '1' else '0' end as ZH_Flag
+,ENETEND_FLAG2 as ENETEND_FLAG2
+from his_sb.Fin_Com_Undruginfo a
